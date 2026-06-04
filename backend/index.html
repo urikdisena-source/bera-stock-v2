@@ -1,0 +1,2314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bera Stock V2</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ── VARIABLES ──────────────────────────────────────── */
+:root{
+  --red:#D50000; --red-dk:#A00000; --red-glow:rgba(213,0,0,.15);
+  --white:#ffffff; --off:#f5f5f5; --light:#ececec;
+  --dark:#111111; --text:#1a1a1a; --text2:#444; --muted:#888;
+  --border:#e2e2e2; --shadow:0 2px 14px rgba(0,0,0,.08);
+  --shadow-hover:0 8px 32px rgba(0,0,0,.14);
+  --green:#27ae60; --radius:8px; --nav-h:62px;
+  font-family:'Montserrat',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--off);color:var(--text);min-height:100vh;overflow-x:hidden}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit}
+a{text-decoration:none}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:#f0f0f0}
+::-webkit-scrollbar-thumb{background:rgba(213,0,0,.3);border-radius:3px}
+
+/* ── PAGES ──────────────────────────────────────────── */
+.page{display:none;min-height:100vh}
+.page.active{display:block}
+
+/* ════════════════════════════════════════
+   AUTH — fondo oscuro con panel blanco
+════════════════════════════════════════ */
+#pageLogin,#pageRegister{
+  display:none;align-items:center;justify-content:center;
+  min-height:100vh;
+  background:linear-gradient(135deg,#0a0a0a 0%,#1c0000 60%,#2a0000 100%);
+}
+#pageLogin.active,#pageRegister.active{display:flex}
+
+.auth-card{
+  width:460px;max-width:94vw;
+  background:var(--white);
+  border-radius:var(--radius);
+  border-top:4px solid var(--red);
+  padding:44px 40px;
+  box-shadow:0 32px 80px rgba(0,0,0,.5);
+  animation:fadeUp .4s ease both
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+.auth-logo{font-size:38px;font-weight:900;text-transform:uppercase;letter-spacing:-.02em;color:var(--dark);margin-bottom:3px}
+.auth-logo span{color:var(--red)}
+.auth-sub{font-size:10px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:26px}
+.auth-title{font-size:21px;font-weight:800;text-transform:uppercase;color:var(--dark);margin-bottom:3px}
+.auth-bar{width:36px;height:3px;background:var(--red);border-radius:2px;margin-bottom:22px}
+
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.fg input,.fg select{
+  width:100%;padding:11px 14px;
+  background:var(--off);border:1.5px solid var(--border);border-radius:5px;
+  color:var(--text);font-size:14px;outline:none;
+  transition:border-color .2s,box-shadow .2s
+}
+.fg input:focus,.fg select:focus{border-color:var(--red);box-shadow:0 0 0 3px var(--red-glow)}
+.fg input::placeholder{color:#bbb}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.btn{
+  width:100%;padding:13px;border:none;border-radius:5px;
+  font-weight:700;font-size:14px;letter-spacing:.1em;text-transform:uppercase;
+  transition:background .18s,box-shadow .18s,transform .12s;margin-top:4px
+}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:hover{background:var(--red-dk);box-shadow:0 6px 20px rgba(213,0,0,.35);transform:translateY(-1px)}
+.btn-red:active{transform:none}
+
+.auth-switch{text-align:center;margin-top:18px;font-size:13px;color:var(--muted)}
+.auth-switch a{color:var(--red);font-weight:700;cursor:pointer}
+.auth-switch a:hover{text-decoration:underline}
+
+.alert{padding:10px 14px;border-radius:4px;font-size:13px;margin-bottom:14px;border-left:3px solid;display:none}
+.alert.show{display:block}
+.alert-error{background:rgba(213,0,0,.07);border-color:var(--red);color:#c0392b}
+.alert-ok{background:rgba(39,174,96,.07);border-color:var(--green);color:#1e8449}
+
+/* ════════════════════════════════════════
+   NAVBAR — blanco con acento rojo
+════════════════════════════════════════ */
+.navbar{
+  position:fixed;top:0;left:0;right:0;height:var(--nav-h);
+  background:var(--white);
+  border-bottom:1px solid var(--border);
+  border-top:4px solid var(--red);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;z-index:200;
+  box-shadow:0 2px 12px rgba(0,0,0,.07)
+}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-logo-text{font-size:20px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;color:var(--dark)}
+.nav-logo-text span{color:var(--red)}
+.nav-logo-sub{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.nav-badge{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;background:var(--red);color:#fff;padding:3px 9px;border-radius:3px}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-avatar{width:32px;height:32px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff}
+.nav-uname{font-size:13px;color:var(--text2);font-weight:600}
+.btn-nav{padding:6px 14px;border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:all .18s}
+.btn-nav-outline{background:transparent;border:1.5px solid var(--border);color:var(--muted)}
+.btn-nav-outline:hover{border-color:var(--red);color:var(--red)}
+.btn-nav-red{background:var(--red);border:1.5px solid var(--red);color:#fff}
+.btn-nav-red:hover{background:var(--red-dk);border-color:var(--red-dk)}
+
+/* ════════════════════════════════════════
+   DASHBOARD
+════════════════════════════════════════ */
+#pageDashboard{padding-top:var(--nav-h);background:var(--off)}
+.dash-body{padding:36px 28px;max-width:1400px;margin:0 auto}
+
+/* Hero — oscuro como contraste */
+.dash-hero{
+  background:linear-gradient(120deg,var(--dark) 0%,#1c0000 55%,#2a0000 100%);
+  border-radius:var(--radius);padding:48px 40px;margin-bottom:32px;
+  position:relative;overflow:hidden;color:var(--white)
+}
+.dash-hero::after{content:none}
+.dash-hero-logo{
+  position:absolute;right:40px;top:50%;transform:translateY(-50%);
+  height:80px;width:auto;opacity:.35;pointer-events:none;user-select:none
+}
+.dash-hero-eyebrow{font-size:11px;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+.dash-hero-title{font-size:clamp(32px,5vw,58px);font-weight:900;text-transform:uppercase;line-height:.95;letter-spacing:-.02em;margin-bottom:12px;color:var(--white)}
+.dash-hero-sub{font-size:14px;color:rgba(255,255,255,.6);font-weight:300;max-width:400px}
+
+/* Tabs */
+.cat-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:26px}
+.cat-tab{
+  padding:7px 16px;background:var(--white);border:1.5px solid var(--border);
+  color:var(--muted);border-radius:4px;font-size:12px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;transition:all .18s;
+  box-shadow:var(--shadow)
+}
+.cat-tab:hover{border-color:var(--red);color:var(--red)}
+.cat-tab.active{background:var(--red);border-color:var(--red);color:#fff;box-shadow:0 4px 14px rgba(213,0,0,.3)}
+
+/* Lista */
+.motos-grid{display:flex;flex-direction:column;gap:10px}
+
+/* ── MOTO CARD — fila horizontal ── */
+.moto-card{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;display:flex;flex-direction:row;align-items:stretch;
+  box-shadow:var(--shadow);
+  transition:box-shadow .2s,border-color .2s
+}
+.moto-card:hover{
+  box-shadow:var(--shadow-hover),0 0 0 1.5px rgba(213,0,0,.25);
+  border-color:rgba(213,0,0,.25)
+}
+
+/* ── VISUAL ZONE — columna izquierda ── */
+.moto-vis{
+  width:120px;flex-shrink:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;border-right:1px solid var(--border);
+  gap:6px
+}
+/* colores de fondo por categoría usando atributo data-cat */
+.moto-vis[data-cat="sincronicas"] {background:linear-gradient(135deg,#fff5f5,#ffeaea)}
+.moto-vis[data-cat="automaticas"] {background:linear-gradient(135deg,#f5f5ff,#eaeaff)}
+.moto-vis[data-cat="electrica"]   {background:linear-gradient(135deg,#f0fff8,#e0f7fa)}
+.moto-vis[data-cat="alta"]        {background:linear-gradient(135deg,#fff8f0,#ffe8d0)}
+.moto-vis[data-cat="offroad"]     {background:linear-gradient(135deg,#f5fff0,#e8f5e0)}
+.moto-vis[data-cat="carga"]       {background:linear-gradient(135deg,#fffdf0,#fff8d0)}
+.moto-vis[data-cat="zontes"]      {background:linear-gradient(135deg,#faf5ff,#f0e8ff)}
+.moto-vis[data-cat="morini"]      {background:linear-gradient(135deg,#fff5fa,#ffe0ef)}
+.moto-vis[data-cat="segway"]      {background:linear-gradient(135deg,#f0faff,#e0f0ff)}
+
+/* símbolo emoji en zona visual */
+.moto-vis-emoji{font-size:38px;line-height:1;opacity:.6;transition:transform .3s,opacity .3s}
+.moto-card:hover .moto-vis-emoji{transform:scale(1.15);opacity:.85}
+.moto-vis-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(0,0,0,.28)}
+
+.cat-badge{
+  position:absolute;top:7px;left:50%;transform:translateX(-50%);
+  padding:3px 8px;background:var(--red);color:#fff;
+  font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  border-radius:3px;white-space:nowrap
+}
+
+/* contenedor derecho */
+.moto-right{flex:1;display:flex;align-items:stretch;min-width:0;padding:14px 18px;gap:16px}
+
+/* info principal */
+.moto-info{display:flex;flex-direction:column;justify-content:center;min-width:160px;width:190px;flex-shrink:0}
+.moto-name{font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:.02em;color:var(--dark);line-height:1.1;margin-bottom:4px}
+.moto-cc{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.moto-price{font-size:20px;font-weight:900;color:var(--dark);line-height:1}
+.moto-price span{font-size:12px;font-weight:400;color:var(--muted)}
+.poliza-tag{
+  font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--green);background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.2);
+  padding:3px 8px;border-radius:3px;display:inline-block;margin-top:6px;align-self:flex-start
+}
+
+/* specs */
+.specs-mini{display:grid;grid-template-columns:1fr 1fr;gap:4px;flex:1;align-content:center}
+.spec-m{display:flex;flex-direction:column;gap:1px;background:var(--off);border-radius:4px;padding:5px 8px;border:1px solid var(--border)}
+.spec-m-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.spec-m-val{font-size:11px;color:var(--text2);font-weight:600}
+
+/* controles lado derecho */
+.moto-controls{display:flex;flex-direction:column;justify-content:center;gap:8px;min-width:160px;flex-shrink:0}
+
+/* stock */
+.stock-zone{display:flex;align-items:center;gap:8px}
+.stock-bar{flex:1;height:4px;background:var(--light);border-radius:2px;overflow:hidden}
+.stock-fill{height:100%;border-radius:2px;background:var(--red);transition:width .4s}
+.stock-txt{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+
+/* ── CONTROL RÁPIDO ── */
+.quick-ctrl{display:flex;align-items:center;gap:8px}
+.qbtn{
+  width:34px;height:34px;border-radius:50%;border:none;
+  font-size:20px;font-weight:700;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .12s,box-shadow .15s;flex-shrink:0
+}
+.qbtn-minus{background:var(--light);color:var(--text2)}
+.qbtn-minus:hover{background:#e0e0e0;transform:scale(1.1)}
+.qbtn-plus{background:var(--red);color:#fff;box-shadow:0 3px 10px rgba(213,0,0,.3)}
+.qbtn-plus:hover{background:var(--red-dk);transform:scale(1.1);box-shadow:0 4px 14px rgba(213,0,0,.45)}
+.qbtn-plus:disabled{background:var(--light);color:var(--muted);box-shadow:none;cursor:not-allowed}
+.q-count{
+  min-width:32px;text-align:center;font-size:18px;font-weight:900;color:var(--dark);
+  transition:transform .15s
+}
+.q-count.bump{transform:scale(1.4)}
+.btn-detail{
+  padding:0 12px;height:30px;background:transparent;border:1.5px solid var(--border);
+  color:var(--muted);border-radius:4px;font-size:11px;font-weight:700;
+  letter-spacing:.07em;text-transform:uppercase;transition:all .18s;white-space:nowrap
+}
+.btn-detail:hover{border-color:var(--red);color:var(--red)}
+
+/* badge "en carrito" sobre la zona visual */
+/* badge AGOTADO */
+.agotado-overlay{
+  position:absolute;inset:0;
+  background:rgba(255,255,255,.72);
+  display:flex;align-items:center;justify-content:center;
+  z-index:5
+}
+.agotado-tag{
+  background:#212121;color:#fff;
+  font-size:13px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;
+  padding:8px 18px;border-radius:4px;
+  box-shadow:0 4px 14px rgba(0,0,0,.25);
+  transform:rotate(-8deg)
+}
+.in-cart-badge{
+  position:absolute;top:7px;right:8px;
+  min-width:22px;height:22px;padding:0 5px;
+  background:var(--dark);color:#fff;
+  border-radius:999px;font-size:12px;font-weight:900;
+  display:none;align-items:center;justify-content:center;
+  border:2px solid #fff
+}
+.in-cart-badge.show{display:flex}
+
+/* ── SELECTORES DE COLOR ── */
+.color-selector{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.color-selector-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.color-swatch{
+  width:22px;height:22px;border-radius:50%;cursor:pointer;
+  border:2px solid transparent;
+  transition:transform .15s,border-color .15s,box-shadow .15s;
+  flex-shrink:0
+}
+.color-swatch:hover{transform:scale(1.2)}
+.color-swatch.selected{
+  border-color:var(--dark);
+  box-shadow:0 0 0 2px var(--white),0 0 0 4px var(--dark);
+  transform:scale(1.15)
+}
+.color-selected-name{
+  font-size:10px;font-weight:700;color:var(--text2);
+  white-space:nowrap;letter-spacing:.04em
+}
+
+/* ── CART FAB ── */
+.cart-fab{
+  position:fixed;bottom:26px;right:26px;z-index:300;
+  width:58px;height:58px;background:var(--red);border:none;border-radius:50%;
+  display:none;align-items:center;justify-content:center;
+  box-shadow:0 6px 24px rgba(213,0,0,.5);transition:transform .2s,box-shadow .2s
+}
+.cart-fab.on{display:flex}
+.cart-fab:hover{transform:scale(1.08);box-shadow:0 8px 32px rgba(213,0,0,.65)}
+.cart-fab svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.fab-badge{
+  position:absolute;top:-3px;right:-3px;min-width:20px;height:20px;padding:0 4px;
+  background:#fff;color:var(--red);border-radius:999px;
+  font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;
+  border:2px solid var(--red)
+}
+
+/* ── DRAWER ── */
+.drawer-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;display:none;backdrop-filter:blur(3px)}
+.drawer-bg.on{display:block}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:400px;max-width:100vw;
+  background:var(--white);border-left:1px solid var(--border);
+  z-index:500;display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .32s cubic-bezier(.22,1,.36,1);
+  box-shadow:-8px 0 40px rgba(0,0,0,.12)
+}
+.drawer.on{transform:none}
+.drawer-head{
+  padding:20px 22px 16px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  border-top:4px solid var(--red);flex-shrink:0;background:var(--white)
+}
+.drawer-title{font-size:20px;font-weight:900;text-transform:uppercase;color:var(--dark)}
+.btn-close{
+  width:30px;height:30px;background:var(--off);border:1px solid var(--border);color:var(--muted);
+  font-size:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;transition:all .15s
+}
+.btn-close:hover{background:var(--red);border-color:var(--red);color:#fff}
+.cart-items{flex:1;overflow-y:auto;padding:14px 22px}
+.cart-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;color:var(--muted)}
+.cart-empty-icon{font-size:44px;opacity:.3}
+.cart-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start}
+.cart-item:last-child{border-bottom:none}
+.cart-item-icon{
+  width:68px;height:52px;background:var(--off);border-radius:4px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:26px;
+  border:1px solid var(--border)
+}
+.cart-item-info{flex:1;min-width:0}
+.cart-item-name{font-size:15px;font-weight:800;text-transform:uppercase;line-height:1;margin-bottom:2px;color:var(--dark)}
+.cart-item-cc{font-size:11px;color:var(--muted);margin-bottom:6px}
+.cart-item-price{font-size:14px;font-weight:700;color:var(--red)}
+.cart-item-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.cart-item-rm{background:none;border:none;color:#ccc;font-size:14px;padding:3px;transition:color .15s;align-self:flex-start}
+.cart-item-rm:hover{color:var(--red)}
+.drawer-foot{padding:16px 22px 24px;border-top:1px solid var(--border);flex-shrink:0;background:var(--white)}
+.cart-summary-grid{
+  display:grid;grid-template-columns:1fr 1fr 1fr;
+  gap:8px;margin-bottom:14px
+}
+.cart-sum-box{
+  background:var(--off);border:1px solid var(--border);border-radius:6px;
+  padding:10px 12px;text-align:center
+}
+.cart-sum-box-val{font-size:20px;font-weight:900;color:var(--dark);line-height:1}
+.cart-sum-box-lbl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.cart-sum-box.highlight{border-color:rgba(213,0,0,.25);background:rgba(213,0,0,.04)}
+.cart-sum-box.highlight .cart-sum-box-val{color:var(--red)}
+.cart-total-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px}
+.cart-total-lbl{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.cart-total-val{font-size:28px;font-weight:900;color:var(--dark)}
+.btn-checkout{width:100%;padding:13px;background:var(--red);color:#fff;border:none;border-radius:5px;font-size:15px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:background .18s,transform .12s}
+.btn-checkout:hover{background:var(--red-dk);transform:translateY(-1px)}
+.btn-checkout:disabled{background:var(--light);color:var(--muted);cursor:not-allowed;transform:none}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:600;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.modal-bg.on{display:flex}
+.modal{
+  background:var(--white);width:680px;max-width:100%;max-height:90vh;overflow-y:auto;
+  border:1px solid var(--border);border-radius:var(--radius);
+  animation:fadeUp .3s ease both;position:relative;
+  box-shadow:0 32px 80px rgba(0,0,0,.25)
+}
+.modal-vis{
+  width:100%;height:220px;display:flex;align-items:center;justify-content:center;
+  border-bottom:1px solid var(--border);font-size:88px;
+  position:relative;overflow:hidden
+}
+.modal-vis::after{
+  content:attr(data-name);position:absolute;bottom:0;left:0;right:0;
+  text-align:center;font-size:11px;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;color:rgba(0,0,0,.2);padding:8px 0 10px
+}
+.modal-head{background:var(--off);padding:22px 28px;border-bottom:1px solid var(--border)}
+.modal-head-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.modal-moto-name{font-size:clamp(22px,5vw,34px);font-weight:900;text-transform:uppercase;line-height:1;color:var(--dark)}
+.modal-moto-cat{font-size:11px;color:var(--red);font-weight:700;letter-spacing:.15em;text-transform:uppercase;margin-top:4px}
+.modal-price-badge{background:var(--red);color:#fff;font-size:24px;font-weight:900;padding:8px 16px;border-radius:5px;white-space:nowrap;box-shadow:0 4px 14px rgba(213,0,0,.3)}
+.modal-body{padding:24px 28px}
+.modal-sec-title{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid rgba(213,0,0,.12)}
+.specs-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:22px}
+.spec-row{background:var(--off);border-radius:5px;padding:9px 12px;border:1px solid var(--border)}
+.spec-row-lbl{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.spec-row-val{font-size:14px;font-weight:600;margin-top:2px;color:var(--text)}
+.features{display:flex;flex-direction:column;gap:5px;margin-bottom:20px}
+.feat-item{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text2)}
+.feat-item::before{content:'';width:5px;height:5px;background:var(--red);transform:rotate(45deg);flex-shrink:0}
+.modal-poliza{background:rgba(39,174,96,.07);border:1px solid rgba(39,174,96,.2);border-radius:5px;padding:11px 14px;color:#1e8449;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.modal-poliza::before{content:'✓';font-size:16px;font-weight:900}
+.modal-close{position:absolute;top:12px;right:12px;z-index:10}
+
+/* ── CHECKOUT ── */
+.checkout-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:700;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px)}
+.checkout-bg.on{display:flex}
+.checkout-box{background:var(--white);width:520px;max-width:100%;max-height:92vh;overflow-y:auto;border:1px solid var(--border);border-radius:var(--radius);animation:fadeUp .3s ease both;box-shadow:0 32px 80px rgba(0,0,0,.2)}
+.checkout-head{background:var(--red);padding:22px 26px}
+.checkout-head h2{font-size:24px;font-weight:900;text-transform:uppercase;color:#fff;letter-spacing:.04em}
+.checkout-head p{font-size:13px;color:rgba(255,255,255,.8);margin-top:4px}
+.checkout-body{padding:24px}
+.checkout-summary{background:var(--off);border:1px solid var(--border);border-radius:5px;padding:14px;margin-bottom:16px}
+.co-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border)}
+.co-row:last-child{border-bottom:none}
+.co-row.total{color:var(--dark);font-weight:800;font-size:16px;padding-top:10px;margin-top:4px;border-top:2px solid var(--red);border-bottom:none}
+.pago-box{background:var(--off);border:1.5px solid rgba(213,0,0,.2);border-radius:5px;padding:16px;margin-bottom:16px}
+.pago-title{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--red);margin-bottom:10px}
+.pago-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.pago-row:last-of-type{border-bottom:none}
+.pago-lbl{color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+.pago-val{font-weight:700;font-size:15px;color:var(--dark)}
+.copy-btn{background:var(--white);border:1px solid var(--border);color:var(--muted);font-size:11px;padding:3px 9px;border-radius:3px;transition:all .15s;margin-left:8px}
+.copy-btn:hover{border-color:var(--red);color:var(--red)}
+.copy-btn.ok{border-color:var(--green);color:var(--green)}
+.capture-zone{margin-top:12px;border:2px dashed var(--border);border-radius:5px;padding:16px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;position:relative}
+.capture-zone:hover{border-color:rgba(213,0,0,.4);background:rgba(213,0,0,.02)}
+.capture-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.capture-icon{font-size:22px;margin-bottom:6px;opacity:.35}
+.capture-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.capture-lbl.has-file{color:var(--green)}
+.capture-preview{width:100%;max-height:120px;object-fit:contain;border-radius:3px;margin-top:8px;display:none}
+.capture-preview.show{display:block}
+.co-note{font-size:12px;color:var(--muted);line-height:1.5;background:rgba(213,0,0,.04);border-left:3px solid var(--red);padding:9px 12px;border-radius:0 4px 4px 0;margin-bottom:16px}
+.co-actions{display:flex;gap:10px}
+.btn-co-cancel{flex:1;padding:12px;background:transparent;border:1.5px solid var(--border);color:var(--muted);border-radius:5px;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:all .18s}
+.btn-co-cancel:hover{border-color:var(--text2);color:var(--text)}
+.btn-co-confirm{flex:2;padding:12px;background:var(--red);color:#fff;border:none;border-radius:5px;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:background .18s,box-shadow .18s}
+.btn-co-confirm:hover{background:var(--red-dk);box-shadow:0 6px 20px rgba(213,0,0,.35)}
+.btn-co-confirm:disabled{background:var(--light);color:var(--muted);cursor:not-allowed;box-shadow:none}
+
+/* ── MODAL GESTIÓN DE COLORES ── */
+.colmgr-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.colmgr-bg.on{display:flex}
+.colmgr-box{background:var(--white);width:520px;max-width:100%;max-height:88vh;overflow-y:auto;border-radius:var(--radius);border:1px solid var(--border);box-shadow:0 32px 80px rgba(0,0,0,.2);animation:fadeUp .3s ease both}
+.colmgr-head{background:var(--dark);padding:18px 22px;display:flex;justify-content:space-between;align-items:center}
+.colmgr-head h3{font-size:16px;font-weight:900;text-transform:uppercase;color:#fff;letter-spacing:.04em}
+.colmgr-body{padding:20px 22px}
+.colmgr-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.colmgr-item{display:flex;align-items:center;gap:10px;background:var(--off);border:1px solid var(--border);border-radius:6px;padding:10px 14px}
+.colmgr-item.inactive{opacity:.5}
+.colmgr-dot-big{width:26px;height:26px;border-radius:50%;border:2px solid rgba(0,0,0,.12);flex-shrink:0}
+.colmgr-item-name{flex:1;font-size:13px;font-weight:600;color:var(--dark)}
+.colmgr-item-hex{font-size:11px;color:var(--muted);font-family:monospace}
+.colmgr-item-actions{display:flex;gap:6px;align-items:center}
+.btn-colmgr-toggle{padding:4px 10px;border-radius:10px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid;cursor:pointer;transition:all .15s}
+.btn-colmgr-toggle.on{background:rgba(39,174,96,.1);border-color:rgba(39,174,96,.3);color:var(--green)}
+.btn-colmgr-toggle.on:hover{background:var(--green);color:#fff}
+.btn-colmgr-toggle.off{background:var(--light);border-color:var(--border);color:var(--muted)}
+.btn-colmgr-toggle.off:hover{background:var(--green);border-color:var(--green);color:#fff}
+.btn-colmgr-del{width:26px;height:26px;background:none;border:1px solid rgba(213,0,0,.2);color:var(--red);border-radius:4px;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.btn-colmgr-del:hover{background:var(--red);color:#fff}
+.colmgr-add{background:var(--off);border:1.5px dashed var(--border);border-radius:6px;padding:16px}
+.colmgr-add-title{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.colmgr-add-row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.colmgr-add-row input[type=text]{flex:1;min-width:120px;padding:8px 11px;border:1.5px solid var(--border);border-radius:4px;font-size:13px;color:var(--text);background:var(--white);outline:none;transition:border-color .2s}
+.colmgr-add-row input[type=text]:focus{border-color:var(--red)}
+.colmgr-add-row input[type=color]{width:44px;height:36px;border:1.5px solid var(--border);border-radius:4px;cursor:pointer;padding:2px;background:var(--white)}
+.btn-colmgr-add{padding:8px 18px;background:var(--red);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:background .18s;white-space:nowrap}
+.btn-colmgr-add:hover{background:var(--red-dk)}
+/* ── GESTIÓN DE COLORES ADMIN ── */
+.color-mgmt-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.color-mgmt-item{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 10px;border-radius:20px;border:1.5px solid var(--border);
+  background:var(--white);cursor:pointer;transition:all .18s;user-select:none
+}
+.color-mgmt-item.disabled-color{opacity:.45;background:var(--off)}
+.color-mgmt-dot{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.15);flex-shrink:0}
+.color-mgmt-name{font-size:11px;font-weight:600;color:var(--text2)}
+.color-mgmt-item.disabled-color .color-mgmt-name{text-decoration:line-through;color:var(--muted)}
+.color-mgmt-status{font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px}
+.color-mgmt-item:not(.disabled-color) .color-mgmt-status{color:var(--green);background:rgba(39,174,96,.1)}
+.color-mgmt-item.disabled-color .color-mgmt-status{color:var(--muted);background:var(--light)}
+
+/* color deshabilitado en catálogo cliente */
+.color-swatch.swatch-disabled{
+  opacity:.25;cursor:not-allowed;
+  filter:grayscale(1)
+}
+.color-swatch.swatch-disabled:hover{transform:none}
+
+/* botón forzar agotado */
+.btn-agotado{padding:4px 10px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:1px solid;transition:all .18s}
+.btn-agotado.normal{background:var(--off);border-color:var(--border);color:var(--muted)}
+.btn-agotado.normal:hover{background:rgba(213,0,0,.08);border-color:var(--red);color:var(--red)}
+.btn-agotado.forced{background:rgba(213,0,0,.08);border-color:rgba(213,0,0,.3);color:var(--red)}
+.btn-agotado.forced:hover{background:var(--red);color:#fff}
+/* ── TOGGLE ACTIVA/INACTIVA ── */
+.toggle-wrap{display:flex;align-items:center;gap:7px}
+.toggle{position:relative;width:36px;height:20px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{
+  position:absolute;inset:0;background:#ccc;border-radius:20px;
+  cursor:pointer;transition:background .2s
+}
+.toggle-track::before{
+  content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;
+  background:#fff;border-radius:50%;transition:transform .2s
+}
+.toggle input:checked+.toggle-track{background:var(--green)}
+.toggle input:checked+.toggle-track::before{transform:translateX(16px)}
+.toggle-lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+
+/* ── HISTORIAL DE PEDIDOS ── */
+.hist-card{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow)
+}
+.hist-head{
+  display:grid;grid-template-columns:1fr auto auto;align-items:center;
+  gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);
+  background:var(--off)
+}
+.hist-id{font-size:13px;font-weight:800;color:var(--dark)}
+.hist-fecha{font-size:11px;color:var(--muted)}
+.hist-body{padding:14px 18px}
+.hist-items{margin-bottom:12px}
+.hist-item-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 0;border-bottom:1px solid var(--border);font-size:13px
+}
+.hist-item-row:last-child{border-bottom:none}
+.hist-item-left{display:flex;align-items:center;gap:8px}
+.hist-color-dot{width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.15);flex-shrink:0}
+.hist-item-name{font-weight:600;color:var(--dark)}
+.hist-item-color{font-size:11px;color:var(--muted)}
+.hist-item-qty{font-size:11px;color:var(--muted);margin-left:4px}
+.hist-item-price{font-weight:700;color:var(--text)}
+.hist-footer{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:2px solid rgba(213,0,0,.1)}
+.hist-total-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.hist-total-val{font-size:20px;font-weight:900;color:var(--dark)}
+.hist-conces{font-size:11px;color:var(--muted);margin-top:4px}
+.hist-empty{text-align:center;padding:60px 20px;background:var(--white);border-radius:var(--radius);border:1px solid var(--border)}
+.hist-empty-icon{font-size:48px;margin-bottom:12px;opacity:.3}
+.hist-empty-txt{font-size:14px;color:var(--muted)}
+.co-ok{background:rgba(39,174,96,.08);border:1px solid rgba(39,174,96,.25);border-radius:5px;padding:12px 14px;text-align:center;color:#1e8449;font-size:13px;font-weight:600;display:none;margin-bottom:14px}
+.co-ok.show{display:block}
+
+/* ════════════════════════════════════════
+   ADMIN — blanco con acento rojo
+════════════════════════════════════════ */
+#pageAdmin{padding-top:var(--nav-h);background:var(--off)}
+.admin-layout{display:flex;min-height:calc(100vh - var(--nav-h))}
+.admin-sidebar{
+  width:210px;flex-shrink:0;background:var(--white);border-right:1px solid var(--border);
+  padding:22px 0;position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));
+  overflow-y:auto;box-shadow:2px 0 8px rgba(0,0,0,.04)
+}
+.admin-nav-item{
+  display:flex;align-items:center;gap:9px;padding:10px 20px;
+  font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);cursor:pointer;transition:all .15s;border-left:3px solid transparent
+}
+.admin-nav-item:hover{color:var(--red);background:rgba(213,0,0,.03)}
+.admin-nav-item.active{color:var(--red);background:rgba(213,0,0,.06);border-left-color:var(--red)}
+.admin-sep{height:1px;background:var(--border);margin:10px 20px}
+.admin-main{flex:1;padding:30px 36px;overflow-x:hidden;background:var(--off)}
+.admin-sec{display:none}
+.admin-sec.active{display:block}
+.admin-pg-title{font-size:26px;font-weight:900;text-transform:uppercase;padding-bottom:10px;border-bottom:3px solid var(--red);display:inline-block;margin-bottom:4px;color:var(--dark)}
+.admin-pg-sub{font-size:13px;color:var(--muted);margin-bottom:24px;margin-top:6px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:26px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--red)}
+.stat-lbl{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.stat-val{font-size:32px;font-weight:900;line-height:1;color:var(--dark)}
+.stat-sub{font-size:11px;color:var(--muted);margin-top:4px}
+.admin-tbl-wrap{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:22px;box-shadow:var(--shadow)}
+.admin-tbl{width:100%;border-collapse:collapse}
+.admin-tbl th{background:var(--off);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:11px 14px;text-align:left;border-bottom:1px solid var(--border)}
+.admin-tbl td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;color:var(--text)}
+.admin-tbl tr:last-child td{border-bottom:none}
+.admin-tbl tr:hover td{background:rgba(213,0,0,.02)}
+.status-badge{display:inline-flex;align-items:center;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:20px;border:1px solid}
+.status-badge[data-s="pending"]    {background:rgba(232,124,42,.08);border-color:rgba(232,124,42,.25);color:#b85d00}
+.status-badge[data-s="en_progreso"]{background:rgba(33,150,243,.1);border-color:rgba(33,150,243,.3);color:#1565c0}
+.status-badge[data-s="despachado"] {background:rgba(39,174,96,.08);border-color:rgba(39,174,96,.25);color:#1e8449}
+.status-badge[data-s="rejected"]   {background:rgba(213,0,0,.07);border-color:rgba(213,0,0,.2);color:var(--red)}
+/* alias legacy */
+.status-badge[data-s="verified"]   {background:rgba(39,174,96,.08);border-color:rgba(39,174,96,.25);color:#1e8449}
+.order-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow)}
+.order-head{display:flex;align-items:center;gap:12px;padding:13px 18px;cursor:pointer;transition:background .15s}
+.order-head:hover{background:var(--off)}
+.order-id{font-size:14px;font-weight:800;color:var(--dark)}
+.order-date{font-size:11px;color:var(--muted)}
+.order-buyer{font-size:13px;color:var(--text2);flex:1}
+.order-total{background:rgba(213,0,0,.07);border:1px solid rgba(213,0,0,.18);color:var(--red);font-size:12px;font-weight:800;padding:4px 10px;border-radius:3px}
+.order-chev{font-size:12px;color:var(--muted);margin-left:auto;transition:transform .2s}
+.order-chev.open{transform:rotate(180deg)}
+.order-body{background:var(--off);border-top:1px solid var(--border);max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s}
+.order-body.open{max-height:600px;padding:16px 18px}
+.order-items-list{margin-bottom:12px}
+.order-item-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border)}
+.order-item-row:last-child{border-bottom:none}
+.order-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:10px}
+.order-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn-status{padding:7px 14px;border:none;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:all .18s}
+.btn-verify{background:rgba(39,174,96,.1);color:#1e8449}
+.btn-verify:hover{background:var(--green);color:#fff}
+.btn-reject{background:rgba(213,0,0,.08);color:var(--red)}
+.btn-reject:hover{background:var(--red);color:#fff}
+.btn-del{background:var(--off);color:var(--muted);border:1px solid var(--border)}
+.btn-del:hover{background:rgba(213,0,0,.08);color:var(--red);border-color:rgba(213,0,0,.2)}
+.no-orders{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+.admin-form-box{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.admin-fg{margin-bottom:13px}
+.admin-fg label{display:block;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.admin-fg input,.admin-fg select,.admin-fg textarea{width:100%;padding:10px 13px;background:var(--off);border:1.5px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s}
+.admin-fg input:focus,.admin-fg select:focus,.admin-fg textarea:focus{border-color:var(--red)}
+.admin-fg textarea{min-height:80px;resize:vertical}
+.admin-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.btn-admin-save{padding:11px 28px;background:var(--red);color:#fff;border:none;border-radius:4px;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;transition:background .18s}
+.btn-admin-save:hover{background:var(--red-dk)}
+.access-row{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.access-row .admin-fg{margin-bottom:0;flex:1;min-width:140px}
+.access-tbl-role{font-size:11px;font-weight:700;padding:3px 10px;border-radius:12px}
+.access-tbl-role[data-r="admin"]{background:rgba(213,0,0,.08);color:var(--red)}
+.access-tbl-role[data-r="vendedor"]{background:rgba(39,174,96,.08);color:var(--green)}
+.access-tbl-role[data-r="viewer"]{background:var(--off);color:var(--muted)}
+.btn-rm-access{background:none;border:none;color:#ccc;font-size:13px;cursor:pointer;padding:3px 6px;transition:color .15s}
+.btn-rm-access:hover{color:var(--red)}
+
+/* ════════════════════════════════════════
+   MIS PEDIDOS
+════════════════════════════════════════ */
+#pageMisPedidos{padding-top:var(--nav-h);background:var(--off)}
+.mis-pedidos-wrap{max-width:860px;margin:0 auto;padding:40px 24px 60px}
+.mp-title{font-size:clamp(26px,5vw,38px);font-weight:900;text-transform:uppercase;letter-spacing:.02em;line-height:1;margin-bottom:10px;color:var(--dark)}
+.mp-line{width:48px;height:3px;background:var(--red);border-radius:2px;margin-bottom:12px}
+.mp-sub{font-size:14px;color:var(--muted);margin-bottom:28px}
+
+/* ── MODAL MODIFICAR ORDEN ── */
+.mod-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:800;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.mod-bg.on{display:flex}
+.mod-box{background:var(--white);width:600px;max-width:100%;max-height:92vh;overflow-y:auto;border-radius:var(--radius);border:1px solid var(--border);box-shadow:0 32px 80px rgba(0,0,0,.2);animation:fadeUp .3s ease both}
+.mod-head{background:var(--dark);padding:20px 26px;border-radius:var(--radius) var(--radius) 0 0}
+.mod-head h2{font-size:20px;font-weight:900;text-transform:uppercase;color:#fff;letter-spacing:.04em}
+.mod-head p{font-size:12px;color:rgba(255,255,255,.6);margin-top:3px}
+.mod-warn{display:flex;gap:12px;background:#fff8e1;border:1.5px solid #f9a825;border-radius:6px;padding:14px 16px;margin:18px 0}
+.mod-warn-icon{font-size:24px;flex-shrink:0}
+.mod-warn-txt{font-size:13px;color:#795548;line-height:1.6;font-weight:500}
+.mod-warn-txt strong{color:#e65100}
+.mod-item-edit{background:var(--off);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:10px}
+.mod-item-name{font-size:14px;font-weight:800;color:var(--dark);margin-bottom:4px;text-transform:uppercase}
+.mod-item-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px}
+.mod-item-color{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);font-weight:600}
+.mod-item-color select{padding:5px 8px;border:1.5px solid var(--border);border-radius:4px;font-size:12px;background:var(--white);color:var(--text);outline:none;cursor:pointer}
+.mod-item-color select:focus{border-color:var(--red)}
+.mod-qty-row{display:flex;align-items:center;gap:6px}
+.mod-qty-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.btn-mod-rm{background:none;border:1px solid rgba(213,0,0,.2);color:var(--red);font-size:11px;font-weight:700;padding:4px 10px;border-radius:4px;transition:all .18s;letter-spacing:.06em;text-transform:uppercase}
+.btn-mod-rm:hover{background:var(--red);color:#fff}
+.mod-actions{display:flex;gap:10px;margin-top:16px}
+/* ── DESPACHOS ── */
+.desp-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow)}
+.desp-head{display:flex;align-items:center;gap:14px;padding:14px 20px;background:var(--off);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.desp-id{font-size:14px;font-weight:900;color:var(--dark)}
+.desp-fecha{font-size:12px;font-weight:600;color:var(--muted)}
+.desp-conces{font-size:13px;font-weight:700;color:var(--text)}
+.desp-body{padding:16px 20px}
+.desp-items-tbl{width:100%;border-collapse:collapse;margin-bottom:12px}
+.desp-items-tbl th{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding:6px 10px;text-align:left;border-bottom:1px solid var(--border);background:var(--off)}
+.desp-items-tbl td{font-size:13px;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text)}
+.desp-items-tbl tr:last-child td{border-bottom:none}
+.desp-obs{font-size:13px;color:var(--text2);background:rgba(33,150,243,.05);border-left:3px solid #1565c0;padding:9px 12px;border-radius:0 4px 4px 0;margin-top:6px}
+.desp-empty{text-align:center;padding:48px 20px;background:var(--white);border-radius:var(--radius);border:1px solid var(--border);color:var(--muted)}
+.desp-form-box{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:24px;box-shadow:var(--shadow)}
+.desp-preview{background:var(--off);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:16px;display:none}
+.desp-preview.show{display:block}
+.desp-preview-title{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+/* responsive */
+@media(max-width:680px){
+  .dash-hero{padding:28px 18px}
+  .dash-body{padding:20px 14px}
+  .admin-main{padding:20px 14px}
+  .admin-sidebar{width:50px}
+  .admin-nav-item span:last-child{display:none}
+  .admin-nav-item{justify-content:center;padding:12px}
+  .row2{grid-template-columns:1fr}
+  .admin-row2{grid-template-columns:1fr}
+  .specs-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ PAGE: LOGIN ══════════════════════════════════ -->
+<div id="pageLogin" class="page">
+  <div class="auth-card">
+    <img src="LOGOS/logo.png" alt="Bera Motorcycles" style="height:80px;width:auto;display:block;margin-bottom:10px">
+    <div class="auth-sub">Portal de Acceso</div>
+    <div class="auth-title">Iniciar Sesión</div>
+    <div class="auth-bar"></div>
+    <div class="alert alert-error" id="loginErr"></div>
+    <div class="fg"><label>Correo</label><input type="email" id="loginEmail" placeholder="usuario@email.com"></div>
+    <div class="fg"><label>Contraseña</label><input type="password" id="loginPass" placeholder="••••••••"></div>
+    <button class="btn btn-red" onclick="doLogin()">Entrar</button>
+    <div class="auth-switch">¿No tienes cuenta? <a onclick="showPage('pageRegister')">Regístrate</a></div>
+  </div>
+</div>
+
+<!-- ═══ PAGE: REGISTER ═══════════════════════════════ -->
+<div id="pageRegister" class="page">
+  <div class="auth-card">
+    <img src="LOGOS/logo.png" alt="Bera Motorcycles" style="height:80px;width:auto;display:block;margin-bottom:10px">
+    <div class="auth-sub">Nuevo Acceso</div>
+    <div class="auth-title">Crear Cuenta</div>
+    <div class="auth-bar"></div>
+    <div class="alert alert-error" id="regErr"></div>
+    <div class="alert alert-ok" id="regOk"></div>
+    <div class="row2">
+      <div class="fg"><label>Nombre</label><input type="text" id="regNombre" placeholder="Juan"></div>
+      <div class="fg"><label>Apellido</label><input type="text" id="regApellido" placeholder="Pérez"></div>
+    </div>
+    <div class="fg"><label>Nombre del Concesionario</label><input type="text" id="regConces" placeholder="Ej: Moto Center Caracas"></div>
+    <div class="fg"><label>Correo</label><input type="email" id="regEmail" placeholder="usuario@email.com"></div>
+    <div class="fg"><label>Contraseña</label><input type="password" id="regPass" placeholder="Mínimo 6 caracteres"></div>
+    <button class="btn btn-red" onclick="doRegister()">Crear Cuenta</button>
+    <div class="auth-switch">¿Ya tienes cuenta? <a onclick="showPage('pageLogin')">Inicia sesión</a></div>
+  </div>
+</div>
+
+<!-- ═══ PAGE: DASHBOARD ══════════════════════════════ -->
+<div id="pageDashboard" class="page">
+  <nav class="navbar">
+    <div class="nav-brand">
+      <img src="LOGOS/logo.png" alt="Bera" style="height:44px;width:auto;display:block">
+    </div>
+    <div class="nav-right">
+      <span id="backendBadge" style="font-size:10px;font-weight:700;letter-spacing:.06em">🟡 Modo local</span>
+      <div class="nav-avatar" id="navAvatar">U</div>
+      <span class="nav-uname" id="navUname"></span>
+      <button class="btn-nav btn-nav-outline" onclick="showPage('pageMisPedidos')">Mis Pedidos</button>
+      <button class="btn-nav btn-nav-red" id="btnAdminNav" style="display:none" onclick="goAdmin()">Admin</button>
+      <button class="btn-nav btn-nav-outline" onclick="doLogout()">Salir</button>
+    </div>
+  </nav>
+  <div class="dash-body">
+    <div class="dash-hero">
+      <img src="LOGOS/logoberablanco.png" alt="" class="dash-hero-logo">
+      <div class="dash-hero-eyebrow">Catálogo Oficial 2026</div>
+      <div class="dash-hero-title">Toda la<br>Gama Bera</div>
+      <div class="dash-hero-sub">Motos, eléctricas, UTVs y tractores. Calidad garantizada.</div>
+    </div>
+    <div class="cat-tabs" id="catTabs"></div>
+    <div class="motos-grid" id="motosGrid"></div>
+  </div>
+</div>
+
+<!-- ═══ PAGE: MIS PEDIDOS ════════════════════════════ -->
+<div id="pageMisPedidos" class="page">
+  <nav class="navbar">
+    <div class="nav-brand">
+      <img src="LOGOS/logo.png" alt="Bera" style="height:44px;width:auto;display:block">
+    </div>
+    <div class="nav-right">
+      <button class="btn-nav btn-nav-outline" onclick="showPage('pageDashboard')">← Catálogo</button>
+      <button class="btn-nav btn-nav-outline" onclick="doLogout()">Salir</button>
+    </div>
+  </nav>
+  <div class="mis-pedidos-wrap">
+    <div class="mp-title">Mis Pedidos</div>
+    <div class="mp-line"></div>
+    <div class="mp-sub">Historial de tus órdenes</div>
+    <div id="misPedidosLista"></div>
+  </div>
+</div>
+
+<!-- ═══ PAGE: ADMIN ══════════════════════════════════ -->
+<div id="pageAdmin" class="page">
+  <nav class="navbar">
+    <div class="nav-brand">
+      <img src="LOGOS/logo.png" alt="Bera" style="height:44px;width:auto;display:block">
+      <span class="nav-badge">Admin</span>
+    </div>
+    <div class="nav-right">
+      <div class="nav-avatar" id="adminAvatar">A</div>
+      <span class="nav-uname" id="adminUname"></span>
+      <button class="btn-nav btn-nav-outline" onclick="showPage('pageDashboard')">← Catálogo</button>
+      <button class="btn-nav btn-nav-outline" onclick="doLogout()">Salir</button>
+    </div>
+  </nav>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-nav-item active" onclick="adminNav(this,'overview')"><span>📊</span><span>Resumen</span></div>
+      <div class="admin-nav-item" onclick="adminNav(this,'pedidos')"><span>📦</span><span>Pedidos</span></div>
+      <div class="admin-sep"></div>
+      <div class="admin-nav-item" onclick="adminNav(this,'catalogo')"><span>🏍️</span><span>Catálogo</span></div>
+      <div class="admin-nav-item" onclick="adminNav(this,'acceso')"><span>🔐</span><span>Acceso</span></div>
+      <div class="admin-nav-item" onclick="adminNav(this,'despachos')"><span>🚛</span><span>Despachos</span></div>
+      <div class="admin-nav-item" onclick="adminNav(this,'config')"><span>⚙️</span><span>Config</span></div>
+    </aside>
+    <main class="admin-main">
+      <div id="sec-overview" class="admin-sec active">
+        <div class="admin-pg-title">Resumen</div>
+        <div class="admin-pg-sub">Vista general del sistema</div>
+        <div class="stats-row" id="adminStats"></div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--red);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid rgba(213,0,0,.12)">Pedidos Recientes</div>
+        <div id="adminRecentOrders"></div>
+      </div>
+      <div id="sec-pedidos" class="admin-sec">
+        <div class="admin-pg-title">Pedidos</div>
+        <div class="admin-pg-sub">Gestión de todas las órdenes</div>
+
+        <!-- Por Despachar -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:10px;border-bottom:3px solid var(--red)">
+          <div style="font-size:18px;font-weight:900;text-transform:uppercase;color:var(--dark)">⏳ Por Despachar</div>
+          <span id="badgePorDespachar" style="background:var(--red);color:#fff;font-size:12px;font-weight:800;padding:3px 10px;border-radius:20px">0</span>
+        </div>
+        <div id="adminPorDespachar" style="margin-bottom:32px"></div>
+
+        <!-- Despachados -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;padding-bottom:10px;border-bottom:3px solid var(--green)">
+          <div style="font-size:18px;font-weight:900;text-transform:uppercase;color:var(--dark)">✅ Despachados</div>
+          <span id="badgeDespachados" style="background:var(--green);color:#fff;font-size:12px;font-weight:800;padding:3px 10px;border-radius:20px">0</span>
+        </div>
+        <div id="adminDespachados"></div>
+      </div>
+      <div id="sec-catalogo" class="admin-sec">
+        <div class="admin-pg-title">Catálogo</div>
+        <div class="admin-pg-sub">Edita stock y precios directamente</div>
+        <div class="admin-tbl-wrap"><table class="admin-tbl">
+          <thead><tr><th>Modelo</th><th>Categoría</th><th>Precio ($)</th><th>Stock por Color</th><th>Gestionar Colores</th><th>Agotado</th><th>Activa</th></tr></thead>
+          <tbody id="adminCatalogoBody"></tbody>
+        </table></div>
+      </div>
+      <div id="sec-despachos" class="admin-sec">
+        <div class="admin-pg-title">Despachos</div>
+        <div class="admin-pg-sub">Crea y gestiona los envíos a concesionarios</div>
+
+        <!-- Formulario nuevo despacho -->
+        <div class="desp-form-box">
+          <div style="font-size:14px;font-weight:800;text-transform:uppercase;color:var(--dark);letter-spacing:.06em;margin-bottom:18px;padding-bottom:10px;border-bottom:2px solid rgba(213,0,0,.15)">➕ Nuevo Despacho</div>
+
+          <div class="admin-row2" style="margin-bottom:14px">
+            <div class="admin-fg">
+              <label>Pedido</label>
+              <select id="despPedido" onchange="onDespPedidoChange()" style="width:100%;padding:10px 13px;background:var(--off);border:1.5px solid var(--border);border-radius:4px;font-size:13px;color:var(--text);outline:none">
+                <option value="">— Selecciona un pedido —</option>
+              </select>
+            </div>
+            <div class="admin-fg">
+              <label>Fecha de Despacho</label>
+              <input type="date" id="despFecha" style="width:100%;padding:10px 13px;background:var(--off);border:1.5px solid var(--border);border-radius:4px;font-size:13px;color:var(--text);outline:none">
+            </div>
+          </div>
+
+          <!-- Preview del pedido seleccionado -->
+          <div class="desp-preview" id="despPreview">
+            <div class="desp-preview-title">📋 Detalle del Pedido</div>
+            <div style="margin-bottom:8px;display:flex;gap:16px;flex-wrap:wrap">
+              <span style="font-size:13px;font-weight:700;color:var(--dark)" id="despPrevConces"></span>
+              <span style="font-size:12px;color:var(--muted)" id="despPrevTotal"></span>
+            </div>
+            <table class="desp-items-tbl" id="despPrevItems"></table>
+          </div>
+
+          <div class="admin-fg">
+            <label>Observación</label>
+            <textarea id="despObs" placeholder="Ej: Carga completa. Conductor: Juan Pérez. Placa: ABC-123" style="width:100%;padding:10px 13px;background:var(--off);border:1.5px solid var(--border);border-radius:4px;font-size:13px;color:var(--text);outline:none;min-height:72px;resize:vertical"></textarea>
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;margin-top:6px">
+            <button class="btn-admin-save" onclick="crearDespacho()">🚛 Crear Despacho</button>
+            <span id="despOkMsg" style="display:none;font-size:13px;color:var(--green);font-weight:600">✓ Despacho creado</span>
+          </div>
+        </div>
+
+        <!-- Listado de despachos -->
+        <div style="font-size:15px;font-weight:900;text-transform:uppercase;color:var(--dark);letter-spacing:.04em;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid rgba(0,0,0,.08)">📦 Historial de Despachos</div>
+        <div id="despListado"></div>
+      </div>
+
+      <div id="sec-config" class="admin-sec">
+        <div class="admin-pg-title">Configuración</div>
+        <div class="admin-pg-sub">Parámetros del sistema</div>
+        <div class="admin-form-box" style="max-width:420px">
+          <div class="admin-fg">
+            <label>⏱ Días permitidos para modificar un pedido</label>
+            <input type="number" id="cfgDias" min="1" max="30" value="3"
+              style="max-width:120px"
+              oninput="previewDias(this.value)">
+          </div>
+          <div id="cfgDiasPreview" style="font-size:13px;color:var(--muted);margin-bottom:16px">
+            Los clientes podrán modificar su pedido hasta <strong>15 días</strong> después de realizarlo.
+          </div>
+          <button class="btn-admin-save" onclick="saveConfigAdmin()">💾 Guardar Configuración</button>
+          <div id="cfgOk" style="display:none;margin-top:10px;font-size:13px;color:var(--green);font-weight:600">✓ Configuración guardada</div>
+        </div>
+      </div>
+      <div id="sec-acceso" class="admin-sec">
+        <div class="admin-pg-title">Acceso</div>
+        <div class="admin-pg-sub">Gestión de usuarios autorizados</div>
+        <div class="access-row">
+          <div class="admin-fg"><label>Correo</label><input type="email" id="accEmail" placeholder="nuevo@email.com"></div>
+          <div class="admin-fg"><label>Nombre</label><input type="text" id="accNombre" placeholder="Nombre completo"></div>
+          <div class="admin-fg"><label>Rol</label>
+            <select id="accRol"><option value="viewer">Viewer</option><option value="vendedor">Vendedor</option><option value="admin">Admin</option></select>
+          </div>
+          <div class="admin-fg" style="display:flex;align-items:flex-end">
+            <button class="btn-admin-save" onclick="addAccess()">Agregar</button>
+          </div>
+        </div>
+        <div class="admin-tbl-wrap"><table class="admin-tbl">
+          <thead><tr><th>Nombre</th><th>Correo</th><th>Rol</th><th></th></tr></thead>
+          <tbody id="accessBody"></tbody>
+        </table></div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══ MODAL GESTIÓN DE COLORES ═════════════════════ -->
+<div class="colmgr-bg" id="colmgrBg" onclick="if(event.target===this)closeColMgr()">
+  <div class="colmgr-box">
+    <div class="colmgr-head">
+      <h3 id="colmgrTitle">Colores</h3>
+      <button class="btn-close" onclick="closeColMgr()" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff">✕</button>
+    </div>
+    <div class="colmgr-body">
+      <div class="colmgr-list" id="colmgrList"></div>
+      <div class="colmgr-add">
+        <div class="colmgr-add-title">➕ Agregar nuevo color</div>
+        <div class="colmgr-add-row">
+          <input type="text" id="colmgrNombre" placeholder="Ej: Azul Metálico" maxlength="30">
+          <input type="color" id="colmgrHex" value="#D50000" title="Elige el color">
+          <button class="btn-colmgr-add" onclick="addColorMoto()">Agregar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ═══ MODAL MODIFICAR ORDEN ══════════════════════════ -->
+<div class="mod-bg" id="modBg" onclick="if(event.target===this)closeModOrder()">
+  <div class="mod-box">
+    <div class="mod-head">
+      <h2>✏️ Modificar Pedido</h2>
+      <p id="modOrderId">ORD-000</p>
+    </div>
+    <div style="padding:0 22px 22px">
+      <div class="mod-warn">
+        <div class="mod-warn-icon">⚠️</div>
+        <div class="mod-warn-txt">
+          <strong>Atención:</strong> Modificar este pedido puede <strong>retrasar el tiempo de entrega</strong>.
+          Los cambios quedarán como <em>pendiente de reverificación</em> hasta que el equipo de Bera los confirme.
+        </div>
+      </div>
+      <div id="modItems"></div>
+      <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;background:var(--off);border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-bottom:16px">
+        <input type="checkbox" id="chkModAcepto" onchange="document.getElementById('btnModGuardar').disabled=!this.checked"
+          style="width:18px;height:18px;margin-top:1px;accent-color:var(--red);flex-shrink:0;cursor:pointer">
+        <span style="font-size:12px;font-weight:600;color:var(--text2);line-height:1.5">
+          Entiendo que esta modificación puede <strong>retrasar mi pedido</strong> y acepto que quede en revisión nuevamente.
+        </span>
+      </label>
+      <div class="mod-actions">
+        <button class="btn-co-cancel" onclick="closeModOrder()">Cancelar</button>
+        <button class="btn-co-confirm" id="btnModGuardar" disabled onclick="saveModOrder()">💾 Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CART FAB ══════════════════════════════════════ -->
+<button class="cart-fab" id="cartFab" onclick="openDrawer()">
+  <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+  <span class="fab-badge" id="fabBadge">0</span>
+</button>
+
+<!-- ═══ CART DRAWER ═══════════════════════════════════ -->
+<div class="drawer-bg" id="drawerBg" onclick="closeDrawer()"></div>
+<div class="drawer" id="cartDrawer">
+  <div class="drawer-head">
+    <span class="drawer-title">Carrito</span>
+    <button class="btn-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="drawer-foot">
+    <div class="cart-summary-grid" id="cartSummaryGrid" style="display:none">
+      <div class="cart-sum-box">
+        <div class="cart-sum-box-val" id="sumUnidades">0</div>
+        <div class="cart-sum-box-lbl">Unidades</div>
+      </div>
+      <div class="cart-sum-box highlight">
+        <div class="cart-sum-box-val" id="sumMonto">$0</div>
+        <div class="cart-sum-box-lbl">Total USD</div>
+      </div>
+      <div class="cart-sum-box">
+        <div class="cart-sum-box-val" id="sumCamiones">0 🚛</div>
+        <div class="cart-sum-box-lbl">Camiones</div>
+      </div>
+    </div>
+    <button class="btn-checkout" id="btnCheckout" onclick="openCheckout()" disabled>Proceder al Pago</button>
+  </div>
+</div>
+
+<!-- ═══ MODAL DETALLE ═════════════════════════════════ -->
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- ═══ CHECKOUT ══════════════════════════════════════ -->
+<div class="checkout-bg" id="checkoutBg" onclick="if(event.target===this)closeCheckout()">
+  <div class="checkout-box">
+    <div class="checkout-head"><h2>Finalizar Pedido</h2><p>Revisa tu orden y confirma</p></div>
+    <div class="checkout-body">
+      <div class="co-ok" id="coOk">✓ Pedido registrado correctamente.</div>
+      <div id="coConcesBadge" style="display:flex;align-items:center;gap:10px;background:var(--off);border:1px solid var(--border);border-radius:6px;padding:12px 16px;margin-bottom:16px">
+        <span style="font-size:22px">🏪</span>
+        <div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)">Concesionario</div>
+          <div style="font-size:15px;font-weight:800;color:var(--dark)" id="coConcesTxt">—</div>
+        </div>
+      </div>
+      <div class="checkout-summary" id="coSummary"></div>
+      <!-- Términos y condiciones -->
+      <div style="background:var(--off);border:1px solid var(--border);border-radius:6px;padding:14px 16px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:10px">📄 Términos y Condiciones</div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;max-height:110px;overflow-y:auto;padding-right:4px;margin-bottom:12px">
+          Al realizar este pedido, el concesionario acepta que:<br>
+          1. Los precios están sujetos a variación según la tasa de cambio vigente al momento de la facturación.<br>
+          2. El pedido se considera confirmado una vez verificado el pago por parte de Bera Motorcycles.<br>
+          3. Los tiempos de entrega son estimados y pueden variar según disponibilidad de inventario.<br>
+          4. No se aceptan devoluciones una vez despachada la mercancía, salvo defecto de fábrica comprobado.<br>
+          5. El concesionario es responsable de verificar las unidades al momento de la entrega.<br>
+          6. Bera Motorcycles se reserva el derecho de modificar el catálogo sin previo aviso.<br>
+          7. Este pedido está sujeto a la disponibilidad de stock confirmada al momento del proceso.<br><br>
+          <span style="display:block;background:rgba(213,0,0,.06);border-left:3px solid var(--red);padding:10px 12px;border-radius:0 4px 4px 0;margin-top:6px">
+            ⏱ <strong>Tiempos de entrega:</strong> Dependiendo de la <strong>cantidad de motos solicitadas</strong>, el pedido podrá tardar más tiempo en llegar. A mayor volumen, mayor es el tiempo estimado de despacho y transporte.
+          </span><br>
+          <span style="display:block;background:rgba(232,124,42,.06);border-left:3px solid #e87c2a;padding:10px 12px;border-radius:0 4px 4px 0">
+            ⚠️ <strong>Disponibilidad por modelo:</strong> Dependiendo de los <strong>modelos de moto solicitados</strong>, el pedido podría <strong>no realizarse</strong> en caso de no contar con la cantidad mínima necesaria de unidades para efectuar el envío. En tal caso, un asesor de Bera Motorcycles se comunicará con el concesionario para coordinar alternativas.
+          </span>
+        </div>
+        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;user-select:none">
+          <input type="checkbox" id="chkTerminos" onchange="onTerminosChange()"
+            style="width:18px;height:18px;margin-top:1px;accent-color:var(--red);flex-shrink:0;cursor:pointer">
+          <span style="font-size:12px;font-weight:600;color:var(--text2);line-height:1.5">
+            He leído y acepto los términos y condiciones de compra de Bera Motorcycles.
+          </span>
+        </label>
+      </div>
+      <div class="co-actions">
+        <button class="btn-co-cancel" onclick="closeCheckout()">Cancelar</button>
+        <button class="btn-co-confirm" id="btnConfirm" onclick="confirmOrder()" disabled>✓ Finalizar Pedido</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   CAPA API — todas las llamadas al backend van aquí
+══════════════════════════════════════════════════════ */
+const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5000'
+  : '';   // en producción el backend está en la misma URL
+
+let TOKEN = localStorage.getItem('bera_jwt') || '';
+
+async function apiFetch(method, path, body) {
+  try {
+    const res = await fetch(API_BASE + path, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(TOKEN ? { 'Authorization': 'Bearer ' + TOKEN } : {})
+      },
+      body: body !== undefined ? JSON.stringify(body) : undefined
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'Error ' + res.status);
+    return data;
+  } catch (e) {
+    // Si falla la API, avisar en consola y continuar con localStorage
+    console.warn('[API]', method, path, e.message);
+    throw e;
+  }
+}
+
+// Detectar si el backend está disponible
+let BACKEND_ONLINE = false;
+async function checkBackend() {
+  try {
+    const h = await apiFetch('GET', '/api/health');
+    BACKEND_ONLINE = h.status === 'ok';
+  } catch (_) {
+    BACKEND_ONLINE = false;
+  }
+  const badge = document.getElementById('backendBadge');
+  if (badge) {
+    badge.textContent = BACKEND_ONLINE ? '🟢 BD Conectada' : '🟡 Modo local';
+    badge.style.color = BACKEND_ONLINE ? 'var(--green)' : '#b85d00';
+  }
+}
+
+/* ── DATOS ──────────────────────────────────────────── */
+const CAT_EMOJI={sincronicas:'🏍',automaticas:'🛵',electrica:'⚡',alta:'🏁',offroad:'🌲',carga:'📦',zontes:'⭐',morini:'🇮🇹',segway:'🚙'};
+
+// 4 colores por moto — degradado de 4 paradas
+const MOTO_COLORS={
+  1: 'linear-gradient(135deg,#e0f7fa 0%,#80deea 33%,#26c6da 66%,#00838f 100%)',   // Bera Bicycle — cian
+  2: 'linear-gradient(135deg,#fce4ec 0%,#f48fb1 33%,#e91e63 66%,#880e4f 100%)',   // BRF 150 — rosa
+  3: 'linear-gradient(135deg,#fff3e0 0%,#ffcc80 33%,#ffa726 66%,#e65100 100%)',   // Socialista — naranja
+  4: 'linear-gradient(135deg,#f1f8e9 0%,#c5e1a5 33%,#66bb6a 66%,#2e7d32 100%)',   // SBR 150 — verde
+  5: 'linear-gradient(135deg,#ede7f6 0%,#ce93d8 33%,#ab47bc 66%,#6a1b9a 100%)',   // X1 — lila
+  6: 'linear-gradient(135deg,#e3f2fd 0%,#90caf9 33%,#42a5f5 66%,#1565c0 100%)',   // Milan — azul cielo
+  7: 'linear-gradient(135deg,#fffde7 0%,#fff176 33%,#ffd600 66%,#f57f17 100%)',   // León — amarillo dorado
+  8: 'linear-gradient(135deg,#fff8e1 0%,#ffcc80 33%,#ff7043 66%,#bf360c 100%)',   // Runner — naranja fuego
+  9: 'linear-gradient(135deg,#e0f2f1 0%,#80cbc4 33%,#26a69a 66%,#004d40 100%)',   // Tezú — teal
+  10:'linear-gradient(135deg,#f3e5f5 0%,#ce93d8 33%,#8e24aa 66%,#4a148c 100%)',   // BR200 — morado
+  11:'linear-gradient(135deg,#f9fbe7 0%,#dce775 33%,#9ccc65 66%,#33691e 100%)',   // Kavak — verde bosque
+  12:'linear-gradient(135deg,#e1f5fe 0%,#81d4fa 33%,#039be5 66%,#01579b 100%)',   // BWS — azul vivo
+  13:'linear-gradient(135deg,#fafafa 0%,#e0e0e0 33%,#9e9e9e 66%,#424242 100%)',   // Cobra — gris plata
+  14:'linear-gradient(135deg,#fffde7 0%,#ffe57f 33%,#ffc107 66%,#e65100 100%)',   // Antiking LE — ámbar
+  15:'linear-gradient(135deg,#e8eaf6 0%,#9fa8da 33%,#5c6bc0 66%,#1a237e 100%)',   // Optimus — índigo
+  16:'linear-gradient(135deg,#ffebee 0%,#ef9a9a 33%,#e53935 66%,#b71c1c 100%)',   // GBR — rojo
+  17:'linear-gradient(135deg,#efebe9 0%,#bcaaa4 33%,#8d6e63 66%,#3e2723 100%)',   // DT BR200 RR — café
+  18:'linear-gradient(135deg,#e3f2fd 0%,#64b5f6 33%,#1976d2 66%,#0d47a1 100%)',   // BRZ 250 — azul marino
+  19:'linear-gradient(135deg,#fce4ec 0%,#f48fb1 33%,#e91e63 66%,#880e4f 100%)',   // GR 250 — fucsia
+  20:'linear-gradient(135deg,#fff8e1 0%,#ffe082 33%,#ff8f00 66%,#e65100 100%)',   // Carguero — ámbar oscuro
+  21:'linear-gradient(135deg,#f1f8e9 0%,#aed581 33%,#689f38 66%,#33691e 100%)',   // Tractor — verde olivo
+  22:'linear-gradient(135deg,#e8eaf6 0%,#9fa8da 33%,#3949ab 66%,#1a237e 100%)',   // Zontes 200U — índigo
+  23:'linear-gradient(135deg,#e0f2f1 0%,#4db6ac 33%,#00796b 66%,#004d40 100%)',   // Zontes 350 — verde oscuro
+  24:'linear-gradient(135deg,#ede7f6 0%,#b39ddb 33%,#7b1fa2 66%,#4a148c 100%)',   // Zontes 368M — púrpura
+  25:'linear-gradient(135deg,#424242 0%,#212121 33%,#1a1a1a 66%,#000000 100%)',   // Zontes 703F — negro
+  26:'linear-gradient(135deg,#fbe9e7 0%,#ff8a65 33%,#d84315 66%,#870000 100%)',   // Morini X-Cape — rojo ladrillo
+  27:'linear-gradient(135deg,#fff3e0 0%,#ffb74d 33%,#ef6c00 66%,#bf360c 100%)',   // Morini STR — naranja
+  28:'linear-gradient(135deg,#f9fbe7 0%,#dce775 33%,#afb42b 66%,#827717 100%)',   // Morini SCR — oliva
+  29:'linear-gradient(135deg,#e0f7fa 0%,#4dd0e1 33%,#0097a7 66%,#006064 100%)',   // Segway AT5L — teal oscuro
+  30:'linear-gradient(135deg,#e8f5e9 0%,#81c784 33%,#388e3c 66%,#1b5e20 100%)',   // Segway Fugleman — verde profundo
+  31:'linear-gradient(135deg,#e3f2fd 0%,#64b5f6 33%,#1565c0 66%,#0d47a1 100%)',   // Segway Villain — azul profundo
+  32:'linear-gradient(135deg,#efebe9 0%,#a1887f 33%,#6d4c41 66%,#3e2723 100%)',   // Segway AT10W — marrón
+  33:'linear-gradient(135deg,#263238 0%,#1a237e 33%,#0d47a1 66%,#01579b 100%)',   // Super Villain — azul noche
+  34:'linear-gradient(135deg,#1a1a2e 0%,#16213e 33%,#0f3460 66%,#533483 100%)',   // Zontes 750 — azul oscuro premium
+};
+
+// colores disponibles por moto: {nombre, hex}
+const MOTO_COLORES={
+  1: [{n:"Blanco Perla",h:"#f5f5f5"},{n:"Negro Mate",h:"#212121"},{n:"Azul Eléctrico",h:"#1565c0"},{n:"Verde Lima",h:"#8bc34a"}],
+  2: [{n:"Rojo Vivo",h:"#e53935"},{n:"Negro",h:"#212121"},{n:"Azul Oscuro",h:"#1a237e"},{n:"Gris Plata",h:"#9e9e9e"}],
+  3: [{n:"Rojo",h:"#c62828"},{n:"Negro",h:"#212121"},{n:"Azul",h:"#1565c0"},{n:"Blanco",h:"#fafafa"}],
+  4: [{n:"Negro Mate",h:"#212121"},{n:"Rojo",h:"#d50000"},{n:"Azul",h:"#0d47a1"},{n:"Blanco",h:"#fafafa"}],
+  5: [{n:"Amarillo",h:"#fdd835"},{n:"Negro",h:"#212121"},{n:"Rojo",h:"#c62828"},{n:"Azul",h:"#1565c0"}],
+  6: [{n:"Blanco Perla",h:"#f5f5f5"},{n:"Gris Plata",h:"#9e9e9e"},{n:"Rojo",h:"#d50000"},{n:"Negro",h:"#212121"}],
+  7: [{n:"Azul Marino",h:"#0d47a1"},{n:"Negro",h:"#212121"},{n:"Rojo Carmín",h:"#b71c1c"},{n:"Blanco",h:"#fafafa"}],
+  8: [{n:"Gris Oscuro",h:"#424242"},{n:"Negro",h:"#212121"},{n:"Rojo",h:"#d50000"},{n:"Azul",h:"#1565c0"}],
+  9: [{n:"Negro Mate",h:"#212121"},{n:"Gris Acero",h:"#607d8b"},{n:"Blanco",h:"#fafafa"},{n:"Azul Cobalto",h:"#1565c0"}],
+  10:[{n:"Negro",h:"#212121"},{n:"Verde Militar",h:"#33691e"},{n:"Marrón",h:"#5d4037"},{n:"Naranja",h:"#e65100"}],
+  11:[{n:"Rojo",h:"#d50000"},{n:"Negro",h:"#212121"},{n:"Blanco",h:"#fafafa"},{n:"Verde",h:"#2e7d32"}],
+  12:[{n:"Negro",h:"#212121"},{n:"Blanco Perla",h:"#f5f5f5"},{n:"Rojo",h:"#d50000"},{n:"Azul",h:"#1565c0"}],
+  13:[{n:"Negro",h:"#212121"},{n:"Gris",h:"#757575"},{n:"Rojo",h:"#d50000"},{n:"Blanco",h:"#fafafa"}],
+  14:[{n:"Negro Café",h:"#3e2723"},{n:"Marrón Cuero",h:"#795548"},{n:"Rojo",h:"#d50000"},{n:"Crema",h:"#fff9c4"}],
+  15:[{n:"Blanco",h:"#fafafa"},{n:"Negro",h:"#212121"},{n:"Azul Eléctrico",h:"#0288d1"},{n:"Morado",h:"#6a1b9a"}],
+  16:[{n:"Rojo Racing",h:"#d50000"},{n:"Negro",h:"#212121"},{n:"Blanco",h:"#fafafa"},{n:"Gris Oscuro",h:"#424242"}],
+  17:[{n:"Verde Militar",h:"#33691e"},{n:"Negro",h:"#212121"},{n:"Naranja",h:"#e65100"},{n:"Gris",h:"#616161"}],
+  18:[{n:"Negro",h:"#212121"},{n:"Azul Marino",h:"#0d47a1"},{n:"Rojo",h:"#d50000"},{n:"Blanco",h:"#fafafa"}],
+  19:[{n:"Rojo",h:"#d50000"},{n:"Negro",h:"#212121"},{n:"Blanco",h:"#fafafa"},{n:"Gris Acero",h:"#546e7a"}],
+  20:[{n:"Amarillo",h:"#f9a825"},{n:"Naranja",h:"#e65100"},{n:"Rojo",h:"#d50000"},{n:"Negro",h:"#212121"}],
+  21:[{n:"Rojo",h:"#d50000"},{n:"Azul",h:"#1565c0"},{n:"Verde",h:"#2e7d32"},{n:"Naranja",h:"#e65100"}],
+  22:[{n:"Negro",h:"#212121"},{n:"Gris Plata",h:"#9e9e9e"},{n:"Azul",h:"#1565c0"},{n:"Rojo",h:"#d50000"}],
+  23:[{n:"Negro",h:"#212121"},{n:"Rojo",h:"#d50000"},{n:"Blanco",h:"#fafafa"},{n:"Azul",h:"#1a237e"}],
+  24:[{n:"Negro Grafito",h:"#212121"},{n:"Gris Plata",h:"#9e9e9e"},{n:"Azul",h:"#0d47a1"},{n:"Blanco",h:"#fafafa"}],
+  25:[{n:"Negro Carbón",h:"#121212"},{n:"Gris Oscuro",h:"#424242"},{n:"Rojo",h:"#d50000"},{n:"Azul",h:"#1a237e"}],
+  26:[{n:"Naranja",h:"#e65100"},{n:"Negro",h:"#212121"},{n:"Gris",h:"#616161"},{n:"Rojo",h:"#d50000"}],
+  27:[{n:"Negro",h:"#212121"},{n:"Rojo",h:"#d50000"},{n:"Gris Plata",h:"#9e9e9e"},{n:"Verde",h:"#2e7d32"}],
+  28:[{n:"Verde Militar",h:"#33691e"},{n:"Negro",h:"#212121"},{n:"Marrón",h:"#5d4037"},{n:"Naranja",h:"#e65100"}],
+  29:[{n:"Verde Militar",h:"#33691e"},{n:"Negro",h:"#212121"},{n:"Gris",h:"#546e7a"},{n:"Rojo",h:"#d50000"}],
+  30:[{n:"Verde Oscuro",h:"#1b5e20"},{n:"Negro",h:"#212121"},{n:"Gris",h:"#546e7a"},{n:"Amarillo",h:"#f9a825"}],
+  31:[{n:"Negro",h:"#212121"},{n:"Gris Oscuro",h:"#424242"},{n:"Azul",h:"#0d47a1"},{n:"Blanco",h:"#fafafa"}],
+  32:[{n:"Negro",h:"#212121"},{n:"Verde Militar",h:"#33691e"},{n:"Naranja",h:"#e65100"},{n:"Gris",h:"#546e7a"}],
+  33:[{n:"Negro",h:"#121212"},{n:"Gris Oscuro",h:"#424242"},{n:"Azul Noche",h:"#0d47a1"},{n:"Rojo",h:"#d50000"}],
+  34:[{n:"Negro",h:"#212121"},{n:"Gris Plata",h:"#9e9e9e"},{n:"Azul Oscuro",h:"#1a237e"},{n:"Blanco",h:"#fafafa"}],
+};
+
+// color seleccionado por moto (índice 0 por defecto)
+const selectedColor={};
+
+// Helper: obtener colores activos e inactivos de una moto
+function getMotoColores(id){
+  const m=MOTOS.find(x=>x.id===id);
+  return(m&&m.colores)||MOTO_COLORES[id]||[];
+}
+// Inicializar colores en motos que no los tienen aún
+function initColoresMoto(){
+  MOTOS.forEach(m=>{
+    if(!m.colores){
+      const base=MOTO_COLORES[m.id]||[];
+      const disabled=m.coloresDeshabilitados||[];
+      const stockPorColor=Math.floor((m.stock||0)/Math.max(base.length,1));
+      m.colores=base.map((c,i)=>({n:c.n,h:c.h,activa:!disabled.includes(i),stock:stockPorColor}));
+      delete m.coloresDeshabilitados;
+    } else {
+      // migrar colores viejos que no tengan stock
+      m.colores.forEach(c=>{ if(c.stock===undefined) c.stock=0; });
+    }
+  });
+  save();
+}
+function getColorStock(motoId){
+  const m=MOTOS.find(x=>x.id===motoId);
+  if(!m||!m.colores) return 0;
+  const idx=selectedColor[motoId]||0;
+  return m.colores[idx]?.stock||0;
+}
+function getTotalStock(motoId){
+  const m=MOTOS.find(x=>x.id===motoId);
+  if(!m||!m.colores) return m?.stock||0;
+  return m.colores.reduce((s,c)=>s+(c.stock||0),0);
+}
+
+const MOTOS_DEFAULT=[
+  {id:1,nombre:"Bera Bicycle",cc:"Eléctrica 350W",precio:660,cat:"electrica",stock:8,specs:{Motor:"350W brushless",Batería:"48V/12AH","Vel. máx":"35 km/h",Frenos:"Disco"},extras:["Bluetooth integrado","Lector USB","Radio","40km de autonomía"],poliza:false},
+  {id:2,nombre:"BRF 150cc",cc:"150CC Sincrónico",precio:999,cat:"sincronicas",stock:12,specs:{Motor:"150CC",Inicio:"Eléctrico/Pie","Vel. máx":"110 km/h",Tanque:"13.5L"},extras:["13.5 HP","Torque 11Nm","Kit de herramientas","Escape con cámara"],poliza:true},
+  {id:3,nombre:"Socialista",cc:"150CC Sincrónico",precio:1030,cat:"sincronicas",stock:7,specs:{Motor:"150CC",Potencia:"13.5 HP","Vel. máx":"130 km/h",Tanque:"13L"},extras:["Puerto USB","Caliper doble pistón","Faro Halógeno"],poliza:false},
+  {id:4,nombre:"SBR 150",cc:"150CC Sincrónico",precio:1050,cat:"sincronicas",stock:5,specs:{Motor:"150CC",Inicio:"Eléctrico/Pie","Vel. máx":"130 km/h",Tanque:"13L"},extras:["Pantalla digital","Puerto USB","Faro LED"],poliza:true},
+  {id:5,nombre:"X1",cc:"125CC Semi Auto",precio:1180,cat:"automaticas",stock:9,specs:{Motor:"125CC Semi Auto",Inicio:"Eléctrico/Pie","Vel. máx":"110 km/h",Tanque:"3.5L"},extras:["Faros LED","Puerto USB","Caja 4 velocidades"],poliza:true},
+  {id:6,nombre:"Milan",cc:"150CC Automático",precio:1220,cat:"automaticas",stock:6,specs:{Motor:"150CC Auto",Inicio:"Eléctrico/Pie","Vel. máx":"110 km/h",Tanque:"6L"},extras:["Faros LED","Pantalla digital","Maleta espaciosa"],poliza:true},
+  {id:7,nombre:"León",cc:"150CC Sincrónico",precio:1150,cat:"sincronicas",stock:10,specs:{Motor:"150CC",Inicio:"Eléctrico/Pie","Vel. máx":"137 km/h",Tanque:"13L"},extras:["13HP","Faro LED","Amortiguadores graduables","Espaldar"],poliza:true},
+  {id:8,nombre:"Runner",cc:"150CC Automático",precio:1460,cat:"automaticas",stock:4,specs:{Motor:"150CC Auto","Vel. máx":"110 km/h",Tanque:"6L",Frenos:"Disco"},extras:["Faros LED","Pantalla digital","Maleta","Chaleco reflectivo"],poliza:true},
+  {id:9,nombre:"Tezú",cc:"Eléctrico 3000W",precio:1390,cat:"electrica",stock:3,specs:{Motor:"3000W",Batería:"60V 30Ah LifePo4","Vel. máx":"95 km/h",Rango:"60 km"},extras:["BMS","Bluetooth","3 modos","Retroceso","Pantalla LED"],poliza:true},
+  {id:10,nombre:"BR200",cc:"200CC Sincrónico",precio:1450,cat:"alta",stock:8,specs:{Motor:"200CC","Vel. máx":"120 km/h",Tanque:"15L",Carga:"170kg"},extras:["Estilo Scrambler","Amortiguadores a gas","Faro LED","USB Tipo C"],poliza:true},
+  {id:11,nombre:"Kavak",cc:"150CC Off-Road",precio:1460,cat:"offroad",stock:6,specs:{Motor:"150CC",Inicio:"Eléctrico/Pie","Vel. máx":"120 km/h",Tanque:"12L"},extras:["13HP","Faros LED","Puerto USB","Tacómetro digital"],poliza:true},
+  {id:12,nombre:"BWS 180cc",cc:"180CC Automático",precio:1690,cat:"automaticas",stock:5,specs:{Motor:"180CC Auto","Vel. máx":"110 km/h",Tanque:"8.5L",Frenos:"Disco CBS"},extras:["Faros LED","Pantalla digital","Maleta","Defensas"],poliza:true},
+  {id:13,nombre:"Cobra",cc:"150CC Automático",precio:1500,cat:"automaticas",stock:7,specs:{Motor:"150CC Auto","Vel. máx":"90 km/h",Tanque:"5L",Frenos:"Disco"},extras:["Faros LED","Maleta espaciosa","Posapies retráctiles"],poliza:true},
+  {id:14,nombre:"Antiking LE",cc:"200CC Sincrónico",precio:1390,cat:"alta",stock:4,specs:{Motor:"200CC","Vel. máx":"120 km/h",Tanque:"15L",Estilo:"Café Racer"},extras:["Puerto USB","Faro LED","Cauchos todo terreno"],poliza:true},
+  {id:15,nombre:"Optimus Electric",cc:"Eléctrico",precio:1720,cat:"electrica",stock:2,specs:{Motor:"Eléctrico",Batería:"48V/30AH BMS","Vel. máx":"60 km/h",Frenos:"Disco"},extras:["Pantalla 7\"","Alarma","Bluetooth","Audio","Garantía 12x12"],poliza:true},
+  {id:16,nombre:"GBR",cc:"200CC Sincrónico",precio:1590,cat:"alta",stock:6,specs:{Motor:"200CC","Vel. máx":"120 km/h",Tanque:"14L",Frenos:"Disco x2"},extras:["Faros LED","Puerto USB","Rines 18\""],poliza:true},
+  {id:17,nombre:"DT BR200 RR",cc:"200CC Off-Road",precio:1950,cat:"offroad",stock:3,specs:{Motor:"200CC","Vel. máx":"120 km/h",Tanque:"14L",Frenos:"Disco x2"},extras:["Todo terreno","Puerto USB","Faro LED","Cauchos tacos"],poliza:true},
+  {id:18,nombre:"BRZ 250",cc:"250CC Sincrónico",precio:2190,cat:"alta",stock:5,specs:{Motor:"250CC 4V",Inicio:"Eléctrico","Vel. máx":"140 km/h",Potencia:"25HP"},extras:["6 velocidades","Refrigeración serpentín","Pantalla LED","Barras invertidas"],poliza:true},
+  {id:19,nombre:"GR 250",cc:"250CC Sincrónico",precio:2620,cat:"alta",stock:4,specs:{Motor:"250CC 4V",Inicio:"Eléctrico","Vel. máx":"145 km/h",Potencia:"25HP"},extras:["6 velocidades","Pantalla LED","Luces exploradoras","Cadena reforzada"],poliza:true},
+  {id:20,nombre:"Carguero",cc:"200CC Carga",precio:4190,cat:"carga",stock:2,specs:{Motor:"200CC","Vel. máx":"60 km/h",Tanque:"20L",Carga:"800kg"},extras:["Reversa","Freno de mano","Cajón 130x200cm","Radio","Limpiabrisas"],poliza:true},
+  {id:21,nombre:"Tractor BRA 254",cc:"Diesel 25HP",precio:13200,cat:"carga",stock:1,specs:{Motor:"Diesel 3cil 25HP",Tracción:"4WD",Tanque:"25L","Vel. máx":"37 km/h"},extras:["9+9 velocidades","Tiro remolque","Techo","Filtro combustible"],poliza:false},
+  {id:22,nombre:"Zontes 200U",cc:"200CC ABS",precio:3350,cat:"zontes",stock:4,specs:{Motor:"200CC",Inicio:"Eléctrico","Vel. máx":"130 km/h",Extras:"ABS+Inyección"},extras:["2x USB","ABS Bosch","Pantalla LCD","Enfriamiento líquido"],poliza:false},
+  {id:23,nombre:"Zontes 350 T2",cc:"350CC 6V ABS",precio:5650,cat:"zontes",stock:3,specs:{Motor:"350CC DOHC","Vel. máx":"160 km/h",Potencia:"39.44 CV",Frenos:"ABS"},extras:["TFT Full Color","Keyless","Modos Eco/Sport","Nitrogen Shock"],poliza:true},
+  {id:24,nombre:"Zontes 368M",cc:"368CC CVT",precio:5900,cat:"zontes",stock:2,specs:{Motor:"368CC CVT",Potencia:"39HP","Vel. máx":"—",Pantalla:"TFT 8\""},extras:["Keyless","App Smartphones","USB A+C","Bluetooth"],poliza:false},
+  {id:25,nombre:"Zontes 703F",cc:"699CC Tricil.",precio:10000,cat:"zontes",stock:2,specs:{Motor:"699CC",Potencia:"95HP","0-100":"~5 seg.",Pantalla:"TFT 6.75\""},extras:["Tricilíndrico","Cámara HD","Quickshift","App"],poliza:true},
+  {id:34,nombre:"Zontes 750",cc:"750CC Bicilíndrico",precio:7200,cat:"zontes",stock:2,specs:{Motor:"750CC",Inicio:"Eléctrico","Vel. máx":"170 km/h",Pantalla:"TFT 7\""},extras:["Sistema Keyless","USB A+C","Bluetooth","App Smartphones","Amortiguador regulable","Inyección Bosch"],poliza:false},
+  {id:26,nombre:"Morini X-Cape",cc:"650CC ADV",precio:5990,cat:"morini",stock:2,specs:{Motor:"650CC",Inicio:"Eléctrico","Vel. máx":"180 km/h",Frenos:"Brembo ABS"},extras:["Marzocchi front","KYB rear","TFT 7\"","6 velocidades"],poliza:false},
+  {id:27,nombre:"Morini STR",cc:"650CC Sport",precio:9000,cat:"morini",stock:2,specs:{Motor:"650CC","Vel. máx":"170 km/h",Frenos:"Brembo ABS",Pantalla:"TFT 5\""},extras:["KYB front+rear","Suspensión invertida","Bluetooth","6 velocidades"],poliza:false},
+  {id:28,nombre:"Morini SCR",cc:"650CC Scrambler",precio:9200,cat:"morini",stock:1,specs:{Motor:"650CC","Vel. máx":"170 km/h",Frenos:"Brembo ABS",Pantalla:"TFT 5\""},extras:["Bosch EFI","LED Full","Suspensión invertida","6 velocidades"],poliza:false},
+  {id:29,nombre:"Segway Snarler AT5L",cc:"499CC DOHC",precio:10200,cat:"segway",stock:2,specs:{Motor:"499CC DOHC",Torque:"48 Nm",Sistema:"2WD/4WD",Carga:"270kg"},extras:["App Smart-Moving","EBS","Dirección asistida","LED"],poliza:true},
+  {id:30,nombre:"Segway Fugleman UT10E",cc:"1000CC 105HP",precio:24500,cat:"segway",stock:1,specs:{Motor:"1000CC DOHC",Potencia:"105HP","Vel. máx":"90 km/h",Carga:"680kg"},extras:["CVTech automático","6 asientos","TFT screen","4 discos"],poliza:true},
+  {id:31,nombre:"Segway Villain SX10W",cc:"1000CC Sport",precio:25500,cat:"segway",stock:1,specs:{Motor:"1000CC DOHC",Torque:"93.5 Nm",Pantalla:"TFT 10.4\"",Carga:"250kg"},extras:["Keyless","Techo corredizo","Puerta plástica","LED"],poliza:true},
+  {id:32,nombre:"Segway Snarler AT10W",cc:"1000CC 97HP",precio:16500,cat:"segway",stock:1,specs:{Motor:"1000CC DOHC",Potencia:"97HP",Sistema:"2WD/4WD/Block",Frenos:"Hidráulicos 4R"},extras:["Bosch EFI","CVT","Rines alu 14\"","Smart-Moving App"],poliza:false},
+  {id:33,nombre:"Segway Super Villain SX20T",cc:"2.0 Turbo 235HP",precio:42500,cat:"segway",stock:1,specs:{Motor:"2.0 Turbo GDi",Potencia:"235HP","0-100":"~5 seg.",Transmisión:"7AT"},extras:["K-MAN 3.0 shocks","Beadlock 15\"","Pantalla 10.4\"","Cámara Full HD"],poliza:false}
+];
+
+const CATS=[
+  {id:'todo',label:'Todos'},{id:'sincronicas',label:'Sincrónicas'},
+  {id:'automaticas',label:'Automáticas'},{id:'electrica',label:'Eléctrica'},
+  {id:'alta',label:'Alta Cilindrada'},{id:'offroad',label:'Off-Road'},
+  {id:'carga',label:'Carga'},{id:'zontes',label:'Zontes'},
+  {id:'morini',label:'Morini'},{id:'segway',label:'Segway'},
+];
+
+/* ── STATE ──────────────────────────────────────────── */
+let currentUser=null, cart=[], currentCat='todo';
+let MOTOS=[], WHITELIST=[], ORDERS=[];
+
+let CONFIG={diasModificacion:15}; // días permitidos para modificar
+function load(){
+  MOTOS=JSON.parse(localStorage.getItem('bera_motos2')||'null')||MOTOS_DEFAULT.map(m=>({...m}));
+  WHITELIST=JSON.parse(localStorage.getItem('bera_wl2')||'[]');
+  ORDERS=JSON.parse(localStorage.getItem('bera_orders2')||'[]');
+  CONFIG=JSON.parse(localStorage.getItem('bera_config2')||'null')||{diasModificacion:15};
+  if(!WHITELIST.length){WHITELIST=[{email:'admin@bera.com',nombre:'Admin Bera',conces:'Planta Bera Estado Aragua',rol:'admin',pass:'admin123'}];saveWL()}
+  const adm=WHITELIST.find(w=>w.email==='admin@bera.com');
+  if(adm){adm.conces='Planta Bera Estado Aragua';saveWL()}
+}
+function saveConfig(){localStorage.setItem('bera_config2',JSON.stringify(CONFIG))}
+
+function diasDesde(fechaStr){
+  // fecha formato dd/mm/yyyy
+  const parts=fechaStr.split('/');
+  if(parts.length<3) return 999;
+  const fecha=new Date(+parts[2],+parts[1]-1,+parts[0]);
+  const hoy=new Date();
+  hoy.setHours(0,0,0,0);
+  return Math.floor((hoy-fecha)/(1000*60*60*24));
+}
+function puedeModificar(o){
+  if(!['pending','en_progreso'].includes(o.status)) return false;
+  const dias=diasDesde(o.fecha);
+  return dias<=CONFIG.diasModificacion;
+}
+function save(){localStorage.setItem('bera_motos2',JSON.stringify(MOTOS))}
+function saveWL(){localStorage.setItem('bera_wl2',JSON.stringify(WHITELIST))}
+function saveOrders(){localStorage.setItem('bera_orders2',JSON.stringify(ORDERS))}
+
+/* ── NAVIGATION ─────────────────────────────────────── */
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='pageDashboard')renderDash();
+  if(id==='pageMisPedidos')renderMisPedidos();
+  if(id==='pageAdmin'){renderAdmin();renderAdminCatalogo();renderAccess();initConfigAdmin();loadDespach()}
+}
+
+/* ── AUTH ───────────────────────────────────────────── */
+async function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('loginPass').value;
+  if(!email||!pass){showAlert('loginErr','Completa todos los campos');return}
+
+  // Intentar con API si está disponible
+  if(BACKEND_ONLINE){
+    try{
+      const res=await apiFetch('POST','/api/auth/login',{email,password:pass});
+      TOKEN=res.token;
+      localStorage.setItem('bera_jwt',TOKEN);
+      currentUser={...res.user,conces:res.user.concesionario};
+      // Cargar motos desde API
+      const motos=await apiFetch('GET','/api/motos/');
+      MOTOS=motos.map(m=>({
+        ...m,cat:m.categoria_id,
+        colores:m.colores||[],
+        stock:m.colores?m.colores.reduce((s,c)=>s+(c.stock||0),0):0
+      }));
+      _setUserUI(currentUser);
+      showPage('pageDashboard');
+      return;
+    }catch(e){showAlert('loginErr',e.message);return}
+  }
+
+  // Modo localStorage
+  const u=WHITELIST.find(w=>w.email===email&&w.pass===pass);
+  if(!u){showAlert('loginErr','Correo o contraseña incorrectos');return}
+  currentUser=u;
+  _setUserUI(u);
+  showPage('pageDashboard');
+}
+
+function _setUserUI(u){
+  const ini=(u.nombre||u.email||'U')[0].toUpperCase();
+  document.getElementById('navAvatar').textContent=ini;
+  document.getElementById('navUname').textContent=u.nombre||u.email;
+  document.getElementById('adminAvatar').textContent=ini;
+  document.getElementById('adminUname').textContent=u.nombre||u.email;
+  document.getElementById('btnAdminNav').style.display=(u.rol==='admin'||u.rol==='vendedor')?'':'none';
+}
+async function doRegister(){
+  const nombre=document.getElementById('regNombre').value.trim();
+  const apellido=document.getElementById('regApellido').value.trim();
+  const conces=document.getElementById('regConces').value.trim();
+  const email=document.getElementById('regEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('regPass').value;
+  if(!nombre||!email||!pass){showAlert('regErr','Completa todos los campos');return}
+  if(!conces){showAlert('regErr','Ingresa el nombre de tu concesionario');return}
+  if(pass.length<6){showAlert('regErr','Contraseña mínimo 6 caracteres');return}
+
+  if(BACKEND_ONLINE){
+    try{
+      await apiFetch('POST','/api/usuarios/registro',{
+        email, nombre:`${nombre} ${apellido}`.trim(),
+        concesionario:conces, password:pass
+      });
+      showAlert('regOk','Cuenta creada. Inicia sesión.',false);
+      setTimeout(()=>showPage('pageLogin'),1500);
+    }catch(e){showAlert('regErr',e.message)}
+    return;
+  }
+
+  // Modo localStorage
+  if(WHITELIST.find(w=>w.email===email)){showAlert('regErr','Correo ya registrado');return}
+  WHITELIST.push({email,nombre:`${nombre} ${apellido}`.trim(),conces,rol:'viewer',pass});
+  saveWL();showAlert('regOk','Cuenta creada. Inicia sesión.',false);
+  setTimeout(()=>showPage('pageLogin'),1500);
+}
+function doLogout(){
+  currentUser=null;cart=[];TOKEN='';
+  localStorage.removeItem('bera_jwt');
+  updateFab();showPage('pageLogin');
+}
+function showAlert(id,msg,isErr=true){
+  const el=document.getElementById(id);
+  el.textContent=msg;el.className='alert '+(isErr?'alert-error':'alert-ok')+' show';
+  setTimeout(()=>el.classList.remove('show'),4000);
+}
+function goAdmin(){showPage('pageAdmin')}
+
+/* ── DASHBOARD ──────────────────────────────────────── */
+function renderDash(){
+  document.getElementById('catTabs').innerHTML=CATS.map(c=>
+    `<button class="cat-tab${c.id===currentCat?' active':''}" onclick="filterCat('${c.id}')">${c.label}</button>`
+  ).join('');
+  const all=MOTOS.filter(m=>m.activa!==false);
+  const list=currentCat==='todo'?all:all.filter(m=>m.cat===currentCat);
+  document.getElementById('motosGrid').innerHTML=list.length
+    ? list.map(cardHTML).join('')
+    : '<div style="text-align:center;padding:40px;color:var(--muted);grid-column:1/-1">No hay modelos disponibles en esta categoría.</div>';
+}
+function filterCat(cat){currentCat=cat;renderDash()}
+
+function swatchesHTML(id){
+  const cols=getMotoColores(id);
+  let sel=selectedColor[id]||0;
+  // si el color seleccionado está inactivo, mover al primero activo
+  if(!cols[sel]||cols[sel].activa===false){
+    sel=cols.findIndex(c=>c.activa!==false);
+    if(sel<0) sel=0;
+    selectedColor[id]=sel;
+  }
+  return cols.map((c,i)=>{
+    const isOff=c.activa===false;
+    return`<div class="color-swatch${i===sel&&!isOff?' selected':''}${isOff?' swatch-disabled':''}"
+      style="background:${c.h};${c.h==='#fafafa'||c.h==='#f5f5f5'?'border:2px solid #ccc':''}"
+      title="${isOff?'No disponible':c.n}"
+      onclick="${isOff?'':'selectColor('+id+','+i+')'}"></div>`;
+  }).join('');
+}
+
+function selectColor(id,idx){
+  selectedColor[id]=idx;
+  const zone=document.getElementById('swatches_'+id);
+  if(zone) zone.innerHTML=swatchesHTML(id);
+  const cols=getMotoColores(id);
+  const c=cols[idx];
+  if(!c) return;
+  // actualizar nombre
+  const lbl=document.getElementById('colorlbl_'+id);
+  if(lbl) lbl.textContent=c.n;
+  // actualizar barra de stock del color
+  const cs=c.stock||0;
+  const isLow=cs>0&&cs<=3;
+  const fill=document.getElementById('stockfill_'+id);
+  const txt=document.getElementById('stocktxt_'+id);
+  if(fill) fill.style.cssText=`width:${Math.min(100,cs/20*100)}%;${cs<=0?'background:#bdbdbd':isLow?'background:#e87c2a':''}`;
+  if(txt){txt.textContent=cs<=0?'Sin stock en este color':cs+' uds'+(isLow?' · Pocas':'');txt.style.color=cs<=0?'#9e9e9e':isLow?'#b85d00':'';}
+  // actualizar zona de compra
+  const buyzone=document.getElementById('buyzone_'+id);
+  if(buyzone){
+    const inCart=cart.filter(x=>x.id===id&&x.colorN===c.n).reduce((s,x)=>s+x.qty,0);
+    if(cs<=0){
+      buyzone.innerHTML=`<div style="flex:1;padding:9px 14px;background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:6px;text-align:center"><span style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9e9e9e">⛔ Agotado en este color</span></div><button class="btn-detail" onclick="openModal(${id})">Ver más</button>`;
+    } else {
+      buyzone.innerHTML=`<div class="quick-ctrl"><button class="qbtn qbtn-minus" onclick="quickMinus(${id})">−</button><span class="q-count" id="qcount_${id}">${inCart}</span><button class="qbtn qbtn-plus" id="qplus_${id}" onclick="quickPlus(${id})" ${inCart>=cs?'disabled':''}>+</button></div><button class="btn-detail" onclick="openModal(${id})">Ver más</button>`;
+    }
+  }
+}
+
+function cardHTML(m){
+  const emoji=CAT_EMOJI[m.cat]||'🏍';
+  const bg='#ffffff';
+  const cols=getMotoColores(m.id);
+  const selIdx=selectedColor[m.id]||0;
+  const selColor=cols[selIdx]||{n:'—',h:'#999'};
+  const colorStock=(cols[selIdx]?.stock)||0;
+  const stockPct=Math.min(100,colorStock/20*100);
+  const isLow=colorStock>0&&colorStock<=3;
+  const specs=Object.entries(m.specs).slice(0,4);
+  return`<div class="moto-card">
+    <div class="moto-vis" id="vis_${m.id}" data-cat="${m.cat}" style="background:${bg}">
+      <span class="cat-badge">${m.cat}</span>
+      <div class="in-cart-badge" id="badge_${m.id}">0</div>
+      <span class="moto-vis-emoji">${emoji}</span>
+      <span class="moto-vis-label">${m.cc}</span>
+      ${(m.forzarAgotado||getTotalStock(m.id)<=0)?'<div class="agotado-overlay"><span class="agotado-tag">⛔ Agotado</span></div>':''}
+    </div>
+    <div class="moto-right">
+      <div class="moto-info">
+        <div class="moto-name">${m.nombre}</div>
+        <div class="moto-cc">${m.cc}</div>
+        <div class="moto-price">$${m.precio.toLocaleString()} <span>USD</span></div>
+        ${m.poliza?'<span class="poliza-tag">✓ Póliza</span>':''}
+      </div>
+      <div class="specs-mini">${specs.map(([k,v])=>`<div class="spec-m"><span class="spec-m-label">${k}</span><span class="spec-m-val">${v}</span></div>`).join('')}</div>
+      <div class="moto-controls">
+        <div class="color-selector" style="margin-bottom:8px">
+          <span class="color-selector-label">Color:</span>
+          <div id="swatches_${m.id}" style="display:flex;gap:5px">${swatchesHTML(m.id)}</div>
+          <span class="color-selected-name" id="colorlbl_${m.id}">${selColor.n}</span>
+        </div>
+        <div class="stock-zone" style="margin-bottom:8px" id="stockzone_${m.id}">
+          <div class="stock-bar"><div class="stock-fill" id="stockfill_${m.id}" style="width:${stockPct}%;${colorStock<=0?'background:#bdbdbd':isLow?'background:#e87c2a':''}"></div></div>
+          <span class="stock-txt" id="stocktxt_${m.id}" style="${colorStock<=0?'color:#9e9e9e':isLow?'color:#b85d00':''}">${colorStock<=0?'Sin stock en este color':colorStock+' uds'+(isLow?' · Pocas':'')}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px" id="buyzone_${m.id}">
+          ${(m.forzarAgotado||colorStock<=0)
+            ?`<div style="flex:1;padding:9px 14px;background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:6px;text-align:center">
+                <span style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#9e9e9e">⛔ ${m.forzarAgotado?'No Disponible':'Agotado en este color'}</span>
+              </div>`
+            :`<div class="quick-ctrl">
+                <button class="qbtn qbtn-minus" onclick="quickMinus(${m.id})">−</button>
+                <span class="q-count" id="qcount_${m.id}">0</span>
+                <button class="qbtn qbtn-plus" id="qplus_${m.id}" onclick="quickPlus(${m.id})">+</button>
+              </div>`}
+          <button class="btn-detail" onclick="openModal(${m.id})">Ver más</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── CART ───────────────────────────────────────────── */
+function quickPlus(id){
+  const m=MOTOS.find(x=>x.id===id);
+  const cols=getMotoColores(id);
+  const selIdx=selectedColor[id]||0;
+  const color=cols[selIdx]||{n:'—',h:'#999'};
+  const colorStock=color.stock||0;
+  const ex=cart.find(c=>c.id===id&&c.colorN===color.n);
+  const inCartColor=ex?ex.qty:0;
+  if(inCartColor>=colorStock) return;
+  if(ex) ex.qty++;
+  else cart.push({id,nombre:m.nombre,cc:m.cc,precio:m.precio,qty:1,cat:m.cat,colorN:color.n,colorH:color.h});
+  updateFab();
+  updateCardCount(id);
+  // animación del contador
+  const el=document.getElementById('qcount_'+id);
+  if(el){el.classList.add('bump');setTimeout(()=>el.classList.remove('bump'),150)}
+}
+function quickMinus(id){
+  const cols=getMotoColores(id);
+  const selIdx=selectedColor[id]||0;
+  const color=cols[selIdx]||{n:'—',h:'#999'};
+  const ex=cart.find(c=>c.id===id&&c.colorN===color.n);
+  if(!ex) return;
+  ex.qty--;
+  if(ex.qty<=0) cart=cart.filter(c=>!(c.id===id&&c.colorN===color.n));
+  updateFab();
+  updateCardCount(id);
+}
+function updateCardCount(id){
+  const totalAll=cart.filter(c=>c.id===id).reduce((s,c)=>s+c.qty,0);
+  const badge=document.getElementById('badge_'+id);
+  if(badge){badge.textContent=totalAll;badge.classList.toggle('show',totalAll>0)}
+  // stock del color actual
+  const cols=getMotoColores(id);
+  const selIdx=selectedColor[id]||0;
+  const colorStock=(cols[selIdx]?.stock)||0;
+  const colorName=cols[selIdx]?.n||'';
+  const inCartColor=cart.filter(c=>c.id===id&&c.colorN===colorName).reduce((s,c)=>s+c.qty,0);
+  const el=document.getElementById('qcount_'+id);
+  if(el) el.textContent=inCartColor;
+  const plus=document.getElementById('qplus_'+id);
+  if(plus) plus.disabled=inCartColor>=colorStock;
+}
+// Capacidad base: 25 motos normales por camión
+// Vehículos grandes ocupan más espacio (en "espacios equivalentes")
+const TRUCK_SLOTS={sincronicas:1,automaticas:1,electrica:1,alta:1,offroad:1,zontes:1,morini:1,carga:4,segway:8};
+const TRUCK_BASE=25; // motos normales por camión
+function calcCamiones(){
+  let espacios=0;
+  cart.forEach(c=>{
+    const slots=TRUCK_SLOTS[c.cat]||1;
+    espacios+=c.qty*slots;
+  });
+  return Math.ceil(espacios/TRUCK_BASE)||0;
+}
+function updateFab(){
+  const n=cart.reduce((s,c)=>s+c.qty,0);
+  document.getElementById('cartFab').classList.toggle('on',n>0);
+  document.getElementById('fabBadge').textContent=n;
+}
+function openDrawer(){renderCart();document.getElementById('cartDrawer').classList.add('on');document.getElementById('drawerBg').classList.add('on')}
+function closeDrawer(){document.getElementById('cartDrawer').classList.remove('on');document.getElementById('drawerBg').classList.remove('on')}
+function renderCart(){
+  const total=cart.reduce((s,c)=>s+c.precio*c.qty,0);
+  const unidades=cart.reduce((s,c)=>s+c.qty,0);
+  const camiones=calcCamiones();
+  document.getElementById('btnCheckout').disabled=!cart.length;
+  // resumen
+  const grid=document.getElementById('cartSummaryGrid');
+  if(grid){
+    grid.style.display=cart.length?'grid':'none';
+    document.getElementById('sumUnidades').textContent=unidades;
+    document.getElementById('sumMonto').textContent='$'+total.toLocaleString();
+    document.getElementById('sumCamiones').textContent=camiones+' 🚛';
+  }
+  if(!cart.length){document.getElementById('cartItems').innerHTML='<div class="cart-empty"><div class="cart-empty-icon">🛒</div><div>Carrito vacío</div></div>';return}
+  document.getElementById('cartItems').innerHTML=cart.map(c=>`
+    <div class="cart-item">
+      <div class="cart-item-icon">${CAT_EMOJI[c.cat]||'🏍'}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${c.nombre}</div>
+        <div class="cart-item-cc">${c.cc}</div>
+        <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+          <div style="width:12px;height:12px;border-radius:50%;background:${c.colorH||'#999'};border:1px solid rgba(0,0,0,.15);flex-shrink:0"></div>
+          <span style="font-size:11px;color:var(--text2);font-weight:600">${c.colorN||'—'}</span>
+        </div>
+        <div class="cart-item-price">$${c.precio.toLocaleString()}</div>
+        <div class="cart-item-sub">Subtotal: $${(c.precio*c.qty).toLocaleString()}</div>
+        <div class="qty-ctrl" style="margin-top:6px">
+          <button class="qty-btn" onclick="cartQty(${c.id},-1)">−</button>
+          <input class="qty-num" type="number" value="${c.qty}" min="1" onchange="cartQtySet(${c.id},this.value)">
+          <button class="qty-btn" onclick="cartQty(${c.id},1)">+</button>
+        </div>
+      </div>
+      <button class="cart-item-rm" onclick="removeFromCart(${c.id})">✕</button>
+    </div>`).join('');
+}
+function cartQty(id,delta){const c=cart.find(x=>x.id===id);if(c){const m=MOTOS.find(x=>x.id===id);c.qty=Math.max(1,Math.min(m.stock,c.qty+delta));renderCart()}}
+function cartQtySet(id,val){const c=cart.find(x=>x.id===id);if(c){const m=MOTOS.find(x=>x.id===id);c.qty=Math.max(1,Math.min(m.stock,parseInt(val)||1));renderCart()}}
+function removeFromCart(id){cart=cart.filter(c=>c.id!==id);updateFab();renderCart()}
+
+/* ── MODAL ──────────────────────────────────────────── */
+function openModal(id){
+  const m=MOTOS.find(x=>x.id===id);
+  const emoji=CAT_EMOJI[m.cat]||'🏍';
+  const bg=CAT_COLORS[m.cat]||'#f5f5f5';
+  document.getElementById('modalContent').innerHTML=`
+    <button class="btn-close modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-vis" style="background:${bg};font-size:90px" data-name="${m.nombre}">${emoji}</div>
+    <div class="modal-head">
+      <div class="modal-head-top">
+        <div>
+          <div class="modal-moto-name">${m.nombre}</div>
+          <div class="modal-moto-cat">${m.cat} · ${m.cc}</div>
+        </div>
+        <div class="modal-price-badge">$${m.precio.toLocaleString()}</div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-sec-title">Especificaciones</div>
+      <div class="specs-grid">${Object.entries(m.specs).map(([k,v])=>`<div class="spec-row"><div class="spec-row-lbl">${k}</div><div class="spec-row-val">${v}</div></div>`).join('')}</div>
+      <div class="modal-sec-title">Características</div>
+      <div class="features">${m.extras.map(e=>`<div class="feat-item">${e}</div>`).join('')}</div>
+      ${m.poliza?'<div class="modal-poliza">Póliza de seguro incluida</div>':''}
+    </div>`;
+  document.getElementById('modalBg').classList.add('on');
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('on')}
+
+/* ── CHECKOUT ───────────────────────────────────────── */
+function openCheckout(){
+  closeDrawer();
+  const total=cart.reduce((s,c)=>s+c.precio*c.qty,0);
+  const unidades=cart.reduce((s,c)=>s+c.qty,0);
+  const camiones=calcCamiones();
+  document.getElementById('coSummary').innerHTML=
+    cart.map(c=>`<div class="co-row"><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:${c.colorH||'#999'};border:1px solid rgba(0,0,0,.15);flex-shrink:0;display:inline-block"></span>${c.nombre} — ${c.colorN||'—'} ×${c.qty}</span><span>$${(c.precio*c.qty).toLocaleString()}</span></div>`).join('')
+    +`<div class="co-row total"><span>Total (${unidades} uds)</span><span>$${total.toLocaleString()}</span></div>
+     <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:10px 12px;background:var(--off);border-radius:5px;border:1px solid var(--border)">
+       <span style="font-size:22px">🚛</span>
+       <div>
+         <div style="font-size:13px;font-weight:800;color:var(--dark)">${camiones} camión${camiones!==1?'es':''} necesario${camiones!==1?'s':''}</div>
+         <div style="font-size:11px;color:var(--muted)">${unidades} unidades · Estimado de transporte</div>
+       </div>
+     </div>`;
+  document.getElementById('coConcesTxt').textContent=currentUser.conces||'Sin concesionario';
+  document.getElementById('coOk').classList.remove('show');
+  document.getElementById('chkTerminos').checked=false;
+  document.getElementById('btnConfirm').disabled=true;
+  document.getElementById('checkoutBg').classList.add('on');
+}
+function closeCheckout(){document.getElementById('checkoutBg').classList.remove('on')}
+function onTerminosChange(){
+  document.getElementById('btnConfirm').disabled=!document.getElementById('chkTerminos').checked;
+}
+function copyText(btn,txt){
+  navigator.clipboard.writeText(txt).then(()=>{
+    btn.textContent='✓';btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='Copiar';btn.classList.remove('ok')},2000)
+  });
+}
+function handleCapture(inp){
+  if(inp.files[0]){
+    const r=new FileReader();
+    r.onload=e=>{
+      document.getElementById('capturePreview').src=e.target.result;
+      document.getElementById('capturePreview').classList.add('show');
+      document.getElementById('captureLbl').textContent='Comprobante adjunto ✓';
+      document.getElementById('captureLbl').classList.add('has-file');
+    };r.readAsDataURL(inp.files[0]);
+  }
+}
+async function confirmOrder(){
+  const total=cart.reduce((s,c)=>s+c.precio*c.qty,0);
+
+  if(BACKEND_ONLINE){
+    try{
+      const items=cart.map(c=>({
+        id:c.id,nombre:c.nombre,cc:c.cc,
+        precio:c.precio,cantidad:c.qty,
+        colorN:c.colorN,colorH:c.colorH
+      }));
+      const res=await apiFetch('POST','/api/pedidos/',{items});
+      // Actualizar stock en memoria local
+      cart.forEach(c=>{
+        const m=MOTOS.find(x=>x.id===c.id);
+        if(m&&m.colores){
+          const col=m.colores.find(x=>x.nombre===c.colorN);
+          if(col) col.stock=Math.max(0,(col.stock||0)-c.qty);
+        }
+      });
+      cart=[];updateFab();
+      document.getElementById('coOk').classList.add('show');
+      document.getElementById('btnConfirm').disabled=true;
+      setTimeout(()=>{closeCheckout();renderDash();},2000);
+    }catch(e){alert('Error al crear pedido: '+e.message)}
+    return;
+  }
+
+  // Modo localStorage
+  const order={
+    id:'ORD-'+Date.now(),
+    fecha:new Date().toLocaleDateString('es-VE'),
+    user:currentUser.email,
+    userName:currentUser.nombre,
+    conces:currentUser.conces||'—',
+    items:cart.map(c=>({...c})),
+    total,status:'pending'
+  };
+  ORDERS.push(order);
+  // descontar del stock por color
+  order.items.forEach(item=>{
+    const m=MOTOS.find(x=>x.id===item.id);
+    if(!m) return;
+    if(m.colores){
+      const col=m.colores.find(c=>c.n===item.colorN);
+      if(col) col.stock=Math.max(0,(col.stock||0)-item.qty);
+    } else {
+      m.stock=Math.max(0,(m.stock||0)-item.qty);
+    }
+  });
+  save();
+  saveOrders();cart=[];updateFab();
+  document.getElementById('coOk').classList.add('show');
+  document.getElementById('btnConfirm').disabled=true;
+  setTimeout(()=>{closeCheckout();renderDash();},2000);
+}
+
+/* ── MIS PEDIDOS ────────────────────────────────────── */
+async function renderMisPedidos(){
+  if(BACKEND_ONLINE){
+    try{
+      const data=await apiFetch('GET','/api/pedidos/mis-pedidos');
+      // Normalizar formato API → frontend
+      ORDERS=data.map(o=>({
+        ...o,user:o.email||currentUser.email,
+        userName:o.user_nombre||o.userName,
+        conces:o.concesionario||o.conces,
+        items:(o.items||[]).map(i=>({
+          ...i,nombre:i.moto_nombre,cc:i.moto_cc,
+          colorN:i.color_nombre,colorH:i.color_hex,
+          qty:i.cantidad,precio:i.precio_unitario
+        })),
+        despachado:o.despacho_id?{
+          id:o.despacho_id,fecha:o.fecha_despacho,obs:o.obs_despacho
+        }:null
+      }));
+    }catch(e){console.warn('mis-pedidos API:',e.message)}
+  }
+  const my=ORDERS.filter(o=>o.user===currentUser?.email||o.usuario_id===currentUser?.id);
+  const el=document.getElementById('misPedidosLista');
+  if(!my.length){
+    el.innerHTML=`<div class="hist-empty"><div class="hist-empty-icon">📋</div><div class="hist-empty-txt">No tienes pedidos aún.</div></div>`;
+    return;
+  }
+  const labels={pending:'⏳ Pendiente',en_progreso:'🔄 En Progreso',despachado:'✅ Despachado',verified:'✅ Despachado',rejected:'❌ Rechazado'};
+  const colors={pending:'#b85d00',verified:'#1e8449',rejected:'#d50000'};
+  el.innerHTML=my.slice().reverse().map(o=>`
+    <div class="hist-card">
+      <div class="hist-head">
+        <div>
+          <div class="hist-id">${o.id}</div>
+          <div class="hist-fecha">${o.fecha}</div>
+          <div class="hist-conces">🏪 ${o.conces||'—'}</div>
+        </div>
+        <span class="status-badge" data-s="${o.status}">${labels[o.status]||o.status}</span>
+        <div style="font-size:20px;font-weight:900;color:var(--dark);white-space:nowrap">$${o.total.toLocaleString()}</div>
+      </div>
+      <div class="hist-body">
+        <div class="hist-items">
+          ${o.items.map(i=>`
+            <div class="hist-item-row">
+              <div class="hist-item-left">
+                <div class="hist-color-dot" style="background:${i.colorH||'#999'}"></div>
+                <div>
+                  <div class="hist-item-name">${i.nombre}</div>
+                  <div class="hist-item-color">${i.colorN||'—'} · ×${i.qty}</div>
+                </div>
+              </div>
+              <div class="hist-item-price">$${(i.precio*i.qty).toLocaleString()}</div>
+            </div>`).join('')}
+        </div>
+        ${o.despachado?`
+        <div style="background:rgba(39,174,96,.06);border:1px solid rgba(39,174,96,.2);border-radius:6px;padding:14px 16px;margin-bottom:14px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-bottom:8px">🚛 Información de Despacho</div>
+          <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:8px">
+            <div><span style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Despacho</span><div style="font-size:13px;font-weight:700;color:var(--dark)">${o.despachado.id}</div></div>
+            <div><span style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Fecha</span><div style="font-size:13px;font-weight:700;color:var(--dark)">📅 ${o.despachado.fecha}</div></div>
+          </div>
+          ${o.despachado.obs&&o.despachado.obs!=='Sin observaciones'?`<div style="font-size:13px;color:var(--text2);background:var(--white);border-left:3px solid var(--green);padding:9px 12px;border-radius:0 4px 4px 0">📝 ${o.despachado.obs}</div>`:''}
+        </div>`:''}
+        <div class="hist-footer">
+          <div>
+            <div class="hist-total-lbl">Total del pedido</div>
+            ${(()=>{
+              if(o.status!=='pending') return '';
+              const dias=diasDesde(o.fecha);
+              const restantes=CONFIG.diasModificacion-dias;
+              if(restantes<0) return `<div style="margin-top:8px;font-size:11px;font-weight:700;color:var(--muted);padding:6px 10px;background:var(--off);border-radius:4px;border:1px solid var(--border)">🔒 Modificación cerrada (${Math.abs(restantes)} días vencidos)</div>`;
+              const txt=restantes===0?'Último día para modificar':`${restantes} día${restantes!==1?'s':''} para modificar`;
+              return `<div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <button onclick="openModOrder('${o.id}')" style="padding:7px 16px;background:transparent;border:1.5px solid var(--border);color:var(--text2);border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:all .18s" onmouseover="this.style.borderColor='#e65100';this.style.color='#e65100'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">✏️ Modificar</button>
+                <span style="font-size:11px;font-weight:600;color:${restantes<=1?'#e65100':'var(--muted)'};background:${restantes<=1?'rgba(230,81,0,.08)':'var(--off)'};border:1px solid ${restantes<=1?'rgba(230,81,0,.2)':'var(--border)'};padding:4px 10px;border-radius:10px">⏱ ${txt}</span>
+              </div>`;
+            })()}
+          </div>
+          <div class="hist-total-val">$${o.total.toLocaleString()}</div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+/* ── MODIFICAR ORDEN ────────────────────────────────── */
+let modOrderId=null;
+function openModOrder(id){
+  const o=ORDERS.find(x=>x.id===id);
+  if(!o)return;
+  modOrderId=id;
+  document.getElementById('modOrderId').textContent=id;
+  document.getElementById('chkModAcepto').checked=false;
+  document.getElementById('btnModGuardar').disabled=true;
+  // Renderizar items editables
+  const html=o.items.map((item,idx)=>{
+    const cols=getMotoColores(item.id);
+    const m=MOTOS.find(x=>x.id===item.id);
+    const moto=m||{stock:99};
+    const colorOpts=cols.map((c,i)=>{
+      const isOff=c.activa===false;
+      return`<option value="${i}" ${item.colorN===c.n?'selected':''} ${isOff?'disabled':''} style="${isOff?'color:#bbb':''}">
+        ${c.n}${isOff?' (no disponible)':''}
+      </option>`;
+    }).join('');
+    return`<div class="mod-item-edit" id="moditem_${idx}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="mod-item-name">${item.nombre}</div>
+        <button class="btn-mod-rm" onclick="removeModItem(${idx})">✕ Quitar</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">${item.cc}</div>
+      <div class="mod-item-controls">
+        <div class="mod-item-color">
+          <span class="mod-qty-lbl">Color:</span>
+          <select id="modcolor_${idx}" onchange="updateModColorDot(${idx},this.value,${item.id})">
+            ${colorOpts}
+          </select>
+          <div id="mocdot_${idx}" style="width:12px;height:12px;border-radius:50%;background:${item.colorH||'#999'};border:1px solid rgba(0,0,0,.15);flex-shrink:0"></div>
+        </div>
+        <div class="mod-qty-row">
+          <span class="mod-qty-lbl">Cantidad:</span>
+          <button class="qty-btn" style="border-radius:3px 0 0 3px" onclick="modQty(${idx},-1,${moto.stock})">−</button>
+          <input class="qty-num" type="number" id="modqty_${idx}" value="${item.qty}" min="1" max="${moto.stock||99}" style="width:44px;height:28px">
+          <button class="qty-btn" style="border-radius:0 3px 3px 0" onclick="modQty(${idx},1,${moto.stock})">+</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('modItems').innerHTML=html||'<div style="text-align:center;padding:20px;color:var(--muted)">Sin ítems</div>';
+  document.getElementById('modBg').classList.add('on');
+}
+function updateModColorDot(idx,colorIdx,motoId){
+  const cols=MOTO_COLORES[motoId]||[];
+  const c=cols[parseInt(colorIdx)];
+  if(c) document.getElementById('mocdot_'+idx).style.background=c.h;
+}
+function modQty(idx,delta,maxStock){
+  const inp=document.getElementById('modqty_'+idx);
+  if(!inp)return;
+  inp.value=Math.max(1,Math.min(maxStock||99,(parseInt(inp.value)||1)+delta));
+}
+function removeModItem(idx){
+  const el=document.getElementById('moditem_'+idx);
+  if(el){
+    el.style.opacity='.3';
+    el.style.pointerEvents='none';
+    el.dataset.removed='1';
+  }
+}
+function closeModOrder(){document.getElementById('modBg').classList.remove('on');modOrderId=null}
+function saveModOrder(){
+  const o=ORDERS.find(x=>x.id===modOrderId);
+  if(!o)return;
+  const newItems=[];
+  o.items.forEach((item,idx)=>{
+    const el=document.getElementById('moditem_'+idx);
+    if(el&&el.dataset.removed==='1') return; // quitado
+    const qtyEl=document.getElementById('modqty_'+idx);
+    const colEl=document.getElementById('modcolor_'+idx);
+    const qty=parseInt(qtyEl?.value)||item.qty;
+    const colorIdx=parseInt(colEl?.value??0);
+    const cols=getMotoColores(item.id);
+    const color=cols[colorIdx]||{n:item.colorN,h:item.colorH};
+    newItems.push({...item,qty,colorN:color.n,colorH:color.h});
+  });
+  if(!newItems.length){alert('El pedido no puede quedar vacío.');return}
+  o.items=newItems;
+  o.total=newItems.reduce((s,i)=>s+i.precio*i.qty,0);
+  o.status='pending'; // vuelve a pendiente
+  o.modificado=true;
+  saveOrders();
+  closeModOrder();
+  renderMisPedidos();
+  alert('✅ Pedido modificado. Quedará en revisión hasta ser verificado nuevamente.');
+}
+
+/* ── ADMIN ──────────────────────────────────────────── */
+function adminNav(el,sec){
+  document.querySelectorAll('.admin-nav-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.admin-sec').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+sec).classList.add('active');
+  if(sec==='despachos') initDespachosTab();
+}
+async function renderAdmin(){
+  if(BACKEND_ONLINE){
+    try{
+      const [pd,desp]=await Promise.all([
+        apiFetch('GET','/api/pedidos/por-despachar'),
+        apiFetch('GET','/api/pedidos/despachados')
+      ]);
+      const normalizar=arr=>arr.map(o=>({
+        ...o,user:o.email||o.user,userName:o.user_nombre||o.userName,
+        conces:o.concesionario||o.conces,
+        items:(o.items||[]).map(i=>({
+          ...i,nombre:i.moto_nombre,cc:i.moto_cc,
+          colorN:i.color_nombre,colorH:i.color_hex,
+          qty:i.cantidad,precio:i.precio_unitario
+        })),
+        despachado:o.despacho_id?{id:o.despacho_id,fecha:o.fecha_despacho,obs:o.obs_despacho}:null
+      }));
+      ORDERS=[...normalizar(pd),...normalizar(desp)];
+    }catch(e){console.warn('renderAdmin API:',e.message)}
+  }
+  const pending=ORDERS.filter(o=>o.status==='pending').length;
+  const rev=ORDERS.reduce((s,o)=>s+o.total,0);
+  document.getElementById('adminStats').innerHTML=`
+    <div class="stat-card"><div class="stat-lbl">Total Pedidos</div><div class="stat-val">${ORDERS.length}</div></div>
+    <div class="stat-card"><div class="stat-lbl">Pendientes</div><div class="stat-val">${pending}</div></div>
+    <div class="stat-card"><div class="stat-lbl">Ingresos</div><div class="stat-val" style="font-size:20px">$${rev.toLocaleString()}</div></div>
+    <div class="stat-card"><div class="stat-lbl">Usuarios</div><div class="stat-val">${WHITELIST.length}</div></div>`;
+  const recent=ORDERS.slice(-5).reverse();
+  document.getElementById('adminRecentOrders').innerHTML=recent.length?recent.map(orderCardHTML).join(''):'<div class="no-orders">Sin pedidos aún</div>';
+
+  // Separar por despachar vs despachados
+  const porDespachar=ORDERS.filter(o=>!['despachado','verified'].includes(o.status)).reverse();
+  const despachados=ORDERS.filter(o=>['despachado','verified'].includes(o.status)).reverse();
+
+  const elPD=document.getElementById('adminPorDespachar');
+  const elD=document.getElementById('adminDespachados');
+  const bPD=document.getElementById('badgePorDespachar');
+  const bD=document.getElementById('badgeDespachados');
+
+  if(elPD) elPD.innerHTML=porDespachar.length?porDespachar.map(orderCardHTML).join(''):'<div class="no-orders" style="background:var(--white);border-radius:var(--radius);padding:28px;border:1px solid var(--border);color:var(--muted)">✅ No hay pedidos pendientes por despachar</div>';
+  if(elD)  elD.innerHTML=despachados.length?despachados.map(orderCardHTML).join(''):'<div class="no-orders" style="background:var(--white);border-radius:var(--radius);padding:28px;border:1px solid var(--border);color:var(--muted)">Sin pedidos despachados aún</div>';
+  if(bPD) bPD.textContent=porDespachar.length;
+  if(bD)  bD.textContent=despachados.length;
+}
+function orderCardHTML(o){
+  const labels={pending:'Pendiente',en_progreso:'En Progreso',despachado:'Despachado',verified:'Despachado',rejected:'Rechazado'};
+  return`<div class="order-card">
+    <div class="order-head" onclick="toggleOrder(this)">
+      <span class="order-id">${o.id}</span>
+      <span class="order-date">${o.fecha}</span>
+      <span class="order-buyer">${o.userName||o.user}</span>
+      <span class="order-total">$${o.total.toLocaleString()}</span>
+      <span class="status-badge" data-s="${o.status}">${labels[o.status]}</span>
+      <span class="order-chev">▼</span>
+    </div>
+    <div class="order-body">
+      <div class="order-items-list">${o.items.map(i=>`<div class="order-item-row"><span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:${i.colorH||'#999'};border:1px solid rgba(0,0,0,.15);flex-shrink:0;display:inline-block"></span>${i.nombre} — ${i.colorN||'—'} ×${i.qty}</span><span>$${(i.precio*i.qty).toLocaleString()}</span></div>`).join('')}</div>
+      <div class="order-meta"><span>👤 ${o.userName||o.user}</span><span>🏪 ${o.conces||'—'}</span></div>
+      <div class="order-actions">
+        <button class="btn-status" style="background:rgba(33,150,243,.1);color:#1565c0" onclick="setStatus('${o.id}','en_progreso')">🔄 En Progreso</button>
+        <button class="btn-status btn-verify" onclick="setStatus('${o.id}','despachado')">✅ Despachado</button>
+        <button class="btn-status btn-reject" onclick="setStatus('${o.id}','rejected')">✗ Rechazar</button>
+        <button class="btn-status btn-del" onclick="delOrder('${o.id}')">🗑 Eliminar</button>
+      </div>
+    </div>
+  </div>`;
+}
+function toggleOrder(head){
+  head.nextElementSibling.classList.toggle('open');
+  head.querySelector('.order-chev').classList.toggle('open');
+}
+async function setStatus(id,status){
+  if(BACKEND_ONLINE){
+    try{await apiFetch('PUT',`/api/pedidos/${id}/estado`,{estado:status})}
+    catch(e){console.warn('setStatus API:',e.message)}
+  }
+  const o=ORDERS.find(x=>x.id===id);
+  if(o){o.status=status;saveOrders()}
+  renderAdmin();renderMisPedidos();
+}
+function delOrder(id){ORDERS=ORDERS.filter(o=>o.id!==id);saveOrders();renderAdmin()}
+function renderAdminCatalogo(){
+  document.getElementById('adminCatalogoBody').innerHTML=MOTOS.map(m=>{
+    const cols=m.colores||getMotoColores(m.id);
+    const activos=cols.filter(c=>c.activa!==false).length;
+    const coloresHTML=`<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      ${cols.slice(0,6).map(c=>`<div style="width:16px;height:16px;border-radius:50%;background:${c.h};border:1.5px solid ${c.activa===false?'#ccc':'rgba(0,0,0,.15)'};opacity:${c.activa===false?.3:1}" title="${c.n}${c.activa===false?' (inactivo)':''}"></div>`).join('')}
+      ${cols.length>6?`<span style="font-size:11px;color:var(--muted)">+${cols.length-6}</span>`:''}
+      <span style="font-size:10px;color:var(--muted);white-space:nowrap">${activos}/${cols.length}</span>
+      <button onclick="openColMgr(${m.id})" style="padding:3px 10px;background:var(--dark);color:#fff;border:none;border-radius:4px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:.06em;text-transform:uppercase">🎨 Editar</button>
+    </div>`;
+    // Stock por color inline
+    const stockColHTML=cols.map((c,i)=>`
+      <div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--border)">
+        <div style="width:14px;height:14px;border-radius:50%;background:${c.h};border:1.5px solid rgba(0,0,0,.12);flex-shrink:0;opacity:${c.activa===false?.35:1}"></div>
+        <span style="font-size:12px;font-weight:600;color:${c.activa===false?'var(--muted)':'var(--text)'};flex:1;min-width:90px">${c.n}</span>
+        <input type="number" value="${c.stock||0}" min="0"
+          style="width:58px;padding:4px 7px;border:1.5px solid var(--border);border-radius:4px;font-size:13px;font-weight:700;text-align:center;color:${(c.stock||0)===0?'#9e9e9e':'var(--text)'};background:${(c.stock||0)===0?'var(--off)':'var(--white)'};outline:none"
+          onchange="updateColorStockInline(${m.id},${i},this.value)"
+          onfocus="this.style.borderColor='var(--red)'"
+          onblur="this.style.borderColor='var(--border)'">
+        <span style="font-size:10px;font-weight:700;color:${(c.stock||0)===0?'#9e9e9e':(c.stock||0)<=3?'#e87c2a':'var(--green)'};min-width:40px">
+          ${(c.stock||0)===0?'Agotado':(c.stock||0)<=3?'Pocas':''}
+        </span>
+      </div>`).join('');
+
+    return`<tr style="${m.activa===false?'opacity:.45':''}">
+      <td><strong>${m.nombre}</strong><br><span style="font-size:11px;color:var(--muted)">${m.cc}</span></td>
+      <td><span class="status-badge" style="background:rgba(213,0,0,.07);border-color:rgba(213,0,0,.18);color:var(--red)">${m.cat}</span></td>
+      <td><input type="number" value="${m.precio}" min="0" style="width:90px;padding:5px 8px;border:1.5px solid var(--border);border-radius:4px;font-size:13px;outline:none;color:var(--text);background:var(--off)" onchange="updatePrecio(${m.id},this.value)" onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--border)'"></td>
+      <td><div style="min-width:260px">${stockColHTML}</div></td>
+      <td>${coloresHTML}</td>
+      <td style="text-align:center">
+        <button class="btn-agotado ${m.forzarAgotado?'forced':'normal'}" onclick="toggleForzarAgotado(${m.id})">
+          ${m.forzarAgotado?'⛔ Agotado':'Marcar'}
+        </button>
+      </td>
+      <td>
+        <label class="toggle">
+          <input type="checkbox" ${m.activa!==false?'checked':''} onchange="toggleActiva(${m.id},this.checked)">
+          <div class="toggle-track"></div>
+        </label>
+      </td>
+    </tr>`;
+  }).join('');
+}
+function toggleActiva(id,val){
+  const m=MOTOS.find(x=>x.id===id);
+  if(m){m.activa=val;save();renderAdminCatalogo();}
+}
+function toggleForzarAgotado(id){
+  const m=MOTOS.find(x=>x.id===id);
+  if(!m) return;
+  m.forzarAgotado=!m.forzarAgotado;
+  save();renderAdminCatalogo();
+}
+
+// ── MODAL COLORES ──
+let colmgrMotoId=null;
+function openColMgr(id){
+  colmgrMotoId=id;
+  const m=MOTOS.find(x=>x.id===id);
+  document.getElementById('colmgrTitle').textContent='🎨 Colores — '+m.nombre;
+  document.getElementById('colmgrNombre').value='';
+  document.getElementById('colmgrHex').value='#D50000';
+  renderColMgrList();
+  document.getElementById('colmgrBg').classList.add('on');
+}
+function closeColMgr(){document.getElementById('colmgrBg').classList.remove('on');colmgrMotoId=null;}
+function renderColMgrList(){
+  const m=MOTOS.find(x=>x.id===colmgrMotoId);
+  if(!m) return;
+  const cols=m.colores||[];
+  if(!cols.length){
+    document.getElementById('colmgrList').innerHTML='<div style="text-align:center;color:var(--muted);padding:20px;font-size:13px">Sin colores. Agrega uno abajo.</div>';
+    return;
+  }
+  document.getElementById('colmgrList').innerHTML=cols.map((c,i)=>`
+    <div class="colmgr-item${c.activa===false?' inactive':''}">
+      <div class="colmgr-dot-big" style="background:${c.h}"></div>
+      <div style="flex:1">
+        <div class="colmgr-item-name">${c.n}</div>
+        <div class="colmgr-item-hex">${c.h}</div>
+      </div>
+      <div class="colmgr-item-actions">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+          <span style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Stock</span>
+          <input type="number" value="${c.stock||0}" min="0"
+            style="width:52px;padding:3px 6px;border:1.5px solid var(--border);border-radius:4px;font-size:13px;font-weight:700;text-align:center;color:var(--text);background:var(--white);outline:none"
+            onchange="updateColorStock(${i},this.value)"
+            onfocus="this.style.borderColor='var(--red)'" onblur="this.style.borderColor='var(--border)'">
+        </div>
+        <button class="btn-colmgr-toggle ${c.activa!==false?'on':'off'}" onclick="toggleColorActiva(${i})">
+          ${c.activa!==false?'ON':'OFF'}
+        </button>
+        <button class="btn-colmgr-del" onclick="deleteColor(${i})" title="Eliminar color">✕</button>
+      </div>
+    </div>`).join('');
+}
+function updateColorStock(idx,val){
+  const m=MOTOS.find(x=>x.id===colmgrMotoId);
+  if(!m||!m.colores) return;
+  m.colores[idx].stock=Math.max(0,parseInt(val)||0);
+  save();renderColMgrList();renderAdminCatalogo();
+}
+function updateColorStockInline(motoId,colorIdx,val){
+  const m=MOTOS.find(x=>x.id===motoId);
+  if(!m||!m.colores) return;
+  m.colores[colorIdx].stock=Math.max(0,parseInt(val)||0);
+  save();
+}
+function toggleColorActiva(idx){
+  const m=MOTOS.find(x=>x.id===colmgrMotoId);
+  if(!m||!m.colores) return;
+  const activos=m.colores.filter(c=>c.activa!==false).length;
+  if(m.colores[idx].activa!==false && activos<=1){alert('Debe quedar al menos 1 color activo.');return;}
+  m.colores[idx].activa=m.colores[idx].activa===false?true:false;
+  save();renderColMgrList();renderAdminCatalogo();
+}
+function deleteColor(idx){
+  const m=MOTOS.find(x=>x.id===colmgrMotoId);
+  if(!m||!m.colores) return;
+  if(m.colores.length<=1){alert('Debe quedar al menos 1 color.');return;}
+  if(!confirm('¿Eliminar el color "'+m.colores[idx].n+'"?')) return;
+  m.colores.splice(idx,1);
+  save();renderColMgrList();renderAdminCatalogo();
+}
+function addColorMoto(){
+  const nombre=document.getElementById('colmgrNombre').value.trim();
+  const hex=document.getElementById('colmgrHex').value;
+  if(!nombre){document.getElementById('colmgrNombre').focus();return;}
+  const m=MOTOS.find(x=>x.id===colmgrMotoId);
+  if(!m) return;
+  if(!m.colores) m.colores=[];
+  m.colores.push({n:nombre,h:hex,activa:true,stock:0});
+  save();
+  document.getElementById('colmgrNombre').value='';
+  renderColMgrList();renderAdminCatalogo();
+}
+function updateStock(id,val){const m=MOTOS.find(x=>x.id===id);if(m){m.stock=Math.max(0,parseInt(val)||0);save()}}
+function updatePrecio(id,val){const m=MOTOS.find(x=>x.id===id);if(m){m.precio=Math.max(0,parseInt(val)||0);save()}}
+function renderAccess(){
+  document.getElementById('accessBody').innerHTML=WHITELIST.map((w,i)=>`
+    <tr>
+      <td style="font-weight:600;color:var(--dark)">${w.nombre||'—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${w.email}</td>
+      <td><span class="access-tbl-role" data-r="${w.rol}">${w.rol}</span></td>
+      <td><button class="btn-rm-access" onclick="removeAccess(${i})">✕</button></td>
+    </tr>`).join('');
+}
+function addAccess(){
+  const email=document.getElementById('accEmail').value.trim().toLowerCase();
+  const nombre=document.getElementById('accNombre').value.trim();
+  const rol=document.getElementById('accRol').value;
+  if(!email)return;
+  if(WHITELIST.find(w=>w.email===email)){alert('Ya existe');return}
+  WHITELIST.push({email,nombre,rol,pass:'bera2025'});
+  saveWL();renderAccess();
+  document.getElementById('accEmail').value='';
+  document.getElementById('accNombre').value='';
+}
+function removeAccess(i){if(WHITELIST.length<=1){alert('Debe quedar al menos un usuario');return}WHITELIST.splice(i,1);saveWL();renderAccess()}
+
+/* ── DESPACHOS ─────────────────────────────────────── */
+let DESPACHOS=[];
+function saveDespach(){localStorage.setItem('bera_despachos2',JSON.stringify(DESPACHOS))}
+function loadDespach(){DESPACHOS=JSON.parse(localStorage.getItem('bera_despachos2')||'[]')}
+
+function initDespachosTab(){
+  loadDespach();
+  // Llenar select de pedidos (solo los no despachados o en progreso)
+  const sel=document.getElementById('despPedido');
+  sel.innerHTML='<option value="">— Selecciona un pedido —</option>';
+  const elegibles=ORDERS.filter(o=>o.status!=='rejected');
+  elegibles.slice().reverse().forEach(o=>{
+    const lbl={pending:'Pendiente',en_progreso:'En Progreso',despachado:'Despachado',verified:'Despachado'}[o.status]||o.status;
+    sel.innerHTML+=`<option value="${o.id}">[${lbl}] ${o.id} — ${o.conces||o.userName} — $${o.total.toLocaleString()}</option>`;
+  });
+  // fecha por defecto = hoy
+  const hoy=new Date();
+  const yyyy=hoy.getFullYear();
+  const mm=String(hoy.getMonth()+1).padStart(2,'0');
+  const dd=String(hoy.getDate()).padStart(2,'0');
+  document.getElementById('despFecha').value=`${yyyy}-${mm}-${dd}`;
+  document.getElementById('despPreview').classList.remove('show');
+  document.getElementById('despObs').value='';
+  renderDespListado();
+}
+
+function onDespPedidoChange(){
+  const id=document.getElementById('despPedido').value;
+  const prev=document.getElementById('despPreview');
+  if(!id){prev.classList.remove('show');return}
+  const o=ORDERS.find(x=>x.id===id);
+  if(!o){prev.classList.remove('show');return}
+  document.getElementById('despPrevConces').textContent='🏪 '+( o.conces||o.userName||o.user);
+  document.getElementById('despPrevTotal').textContent='Total: $'+o.total.toLocaleString()+' · '+o.items.reduce((s,i)=>s+i.qty,0)+' unidades';
+  document.getElementById('despPrevItems').innerHTML=`
+    <thead><tr><th>Modelo</th><th>Color</th><th>Cant.</th><th>Precio</th></tr></thead>
+    <tbody>${o.items.map(i=>`
+      <tr>
+        <td><strong>${i.nombre}</strong><br><span style="font-size:11px;color:var(--muted)">${i.cc}</span></td>
+        <td><div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;border-radius:50%;background:${i.colorH||'#999'};border:1px solid rgba(0,0,0,.15)"></div>${i.colorN||'—'}</div></td>
+        <td><strong>${i.qty}</strong></td>
+        <td>$${(i.precio*i.qty).toLocaleString()}</td>
+      </tr>`).join('')}
+    </tbody>`;
+  prev.classList.add('show');
+}
+
+async function crearDespacho(){
+  const pedidoId=document.getElementById('despPedido').value;
+  const fecha=document.getElementById('despFecha').value;
+  const obs=document.getElementById('despObs').value.trim();
+  if(!pedidoId){alert('Selecciona un pedido.');return}
+  if(!fecha){alert('Ingresa la fecha de despacho.');return}
+  const o=ORDERS.find(x=>x.id===pedidoId);
+  if(!o) return;
+  const desp={
+    id:'DSP-'+Date.now(),
+    pedidoId,
+    fecha:fecha.split('-').reverse().join('/'),
+    conces:o.conces||o.userName||o.user,
+    items:o.items.map(i=>({...i})),
+    total:o.total,
+    obs:obs||'Sin observaciones'
+  };
+  if(BACKEND_ONLINE){
+    try{
+      await apiFetch('POST','/api/despachos/',{
+        pedido_id:pedidoId,
+        fecha:fecha,
+        observacion:obs
+      });
+    }catch(e){alert('Error API: '+e.message);return}
+  }
+  DESPACHOS.push(desp);
+  saveDespach();
+  o.status='despachado';
+  o.despachado={
+    id:desp.id,
+    fecha:desp.fecha,
+    obs:desp.obs
+  };
+  saveOrders();
+  renderAdmin();
+  // resetear form
+  document.getElementById('despPedido').value='';
+  document.getElementById('despObs').value='';
+  document.getElementById('despPreview').classList.remove('show');
+  const ok=document.getElementById('despOkMsg');
+  ok.style.display='inline';
+  setTimeout(()=>ok.style.display='none',2500);
+  initDespachosTab();
+}
+
+function renderDespListado(){
+  const el=document.getElementById('despListado');
+  if(!DESPACHOS.length){
+    el.innerHTML='<div class="desp-empty">🚛 Sin despachos creados aún.</div>';return;
+  }
+  el.innerHTML=DESPACHOS.slice().reverse().map(d=>`
+    <div class="desp-card">
+      <div class="desp-head">
+        <span class="desp-id">🚛 ${d.id}</span>
+        <span class="desp-fecha">📅 ${d.fecha}</span>
+        <span class="desp-conces">🏪 ${d.conces}</span>
+        <span style="font-size:11px;color:var(--muted)">Pedido: ${d.pedidoId}</span>
+        <span style="font-size:12px;font-weight:800;color:var(--red);margin-left:auto">$${d.total.toLocaleString()}</span>
+        <button onclick="eliminarDespacho('${d.id}')" style="padding:4px 10px;background:none;border:1px solid rgba(213,0,0,.2);color:var(--red);border-radius:4px;font-size:11px;font-weight:700;cursor:pointer">🗑</button>
+      </div>
+      <div class="desp-body">
+        <table class="desp-items-tbl">
+          <thead><tr><th>Modelo</th><th>Color</th><th>Cant.</th><th>Precio</th></tr></thead>
+          <tbody>${d.items.map(i=>`
+            <tr>
+              <td><strong>${i.nombre}</strong></td>
+              <td><div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;border-radius:50%;background:${i.colorH||'#999'};border:1px solid rgba(0,0,0,.15)"></div>${i.colorN||'—'}</div></td>
+              <td>${i.qty}</td>
+              <td>$${(i.precio*i.qty).toLocaleString()}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+        ${d.obs&&d.obs!=='Sin observaciones'?`<div class="desp-obs">📝 ${d.obs}</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+function eliminarDespacho(id){
+  if(!confirm('¿Eliminar este despacho?')) return;
+  DESPACHOS=DESPACHOS.filter(d=>d.id!==id);
+  saveDespach();renderDespListado();
+}
+
+function previewDias(val){
+  const n=parseInt(val)||1;
+  document.getElementById('cfgDiasPreview').innerHTML=
+    `Los clientes podrán modificar su pedido hasta <strong>${n} día${n!==1?'s':''}</strong> después de realizarlo.`;
+}
+function saveConfigAdmin(){
+  const val=parseInt(document.getElementById('cfgDias').value)||3;
+  CONFIG.diasModificacion=Math.max(1,Math.min(30,val));
+  saveConfig();
+  const ok=document.getElementById('cfgOk');
+  ok.style.display='block';
+  setTimeout(()=>ok.style.display='none',2500);
+}
+function initConfigAdmin(){
+  document.getElementById('cfgDias').value=CONFIG.diasModificacion;
+  previewDias(CONFIG.diasModificacion);
+}
+
+/* ── INIT ───────────────────────────────────────────── */
+load();initColoresMoto();showPage('pageLogin');checkBackend();
+</script>
+</body>
+</html>

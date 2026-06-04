@@ -8,7 +8,7 @@ from flask_cors import CORS
 from config import Config
 
 # Ruta al index.html (un nivel arriba del backend)
-FRONTEND_DIR = os.path.join(os.path.dirname(__file__), '..')
+FRONTEND_DIR = os.path.dirname(__file__)
 
 # ── Importar blueprints ──────────────────────────────────────
 from routes.auth         import bp as auth_bp
