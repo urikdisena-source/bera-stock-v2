@@ -2134,8 +2134,28 @@ function addColorMoto(){
   document.getElementById('colmgrNombre').value='';
   renderColMgrList();renderAdminCatalogo();
 }
-function updateStock(id,val){const m=MOTOS.find(x=>x.id===id);if(m){m.stock=Math.max(0,parseInt(val)||0);save()}}
-function updatePrecio(id,val){const m=MOTOS.find(x=>x.id===id);if(m){m.precio=Math.max(0,parseInt(val)||0);save()}}
+function updateStock(id,val){
+  const m=MOTOS.find(x=>x.id===id);
+  if(!m) return;
+  const stock=Math.max(0,parseInt(val)||0);
+  if(BACKEND_ONLINE && TOKEN){
+    // Actualizar el primer color activo con el stock total (o repartir en el primero)
+    const col=m.colores&&m.colores[0];
+    if(col) apiFetch('PUT',`/api/motos/${id}/colores/${col.id}`,{stock}).catch(()=>{});
+  }
+  m.stock=stock;
+  save();
+}
+function updatePrecio(id,val){
+  const m=MOTOS.find(x=>x.id===id);
+  if(!m) return;
+  const precio=Math.max(0,parseInt(val)||0);
+  if(BACKEND_ONLINE && TOKEN){
+    apiFetch('PUT',`/api/motos/${id}`,{precio}).catch(()=>{});
+  }
+  m.precio=precio;
+  save();
+}
 function renderAccess(){
   document.getElementById('accessBody').innerHTML=WHITELIST.map((w,i)=>`
     <tr>
